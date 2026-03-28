@@ -1,22 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ======================
+     ROVOXA DARK THEME (Single Mode)
+     ====================== */
+  color-scheme: dark; /* Ensures native scrollbars and inputs are dark mode */
+  --background: #050505; /* Deep space black */
+  --foreground: #ffffff; /* Crisp white for main text */
+
+  /* Muted colors for subtitles */
+  --muted: #1f1f22; 
+  --muted-foreground: #a1a1aa; /* Light gray for readability */
+
+  /* The bright lime green for accents and main buttons */
+  --primary: #a3e635; 
+  --primary-foreground: #000000; /* Black text on neon green looks best */
+
+  /* Elevated dark gray for cards and secondary buttons */
+  --secondary: #18181b; 
+  --secondary-foreground: #fafafa;
+  
+  /* Additional subtle colors */
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+
+  /* Subtle borders for cards and inputs */
+  --border: #27272a; 
 }
 
+/* Map the variables to Tailwind CSS v4 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-border: var(--border);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
