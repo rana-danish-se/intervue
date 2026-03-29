@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { EnvelopeSimple, LockKey, User, ArrowRight } from "@phosphor-icons/react";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -50,11 +50,11 @@ export default function AuthForm() {
         </button>
 
         <div className="relative flex items-center mb-6">
-          <div className="flex-grow border-t border-white/10" />
-          <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs uppercase tracking-wider">
+          <div className="grow border-t border-white/10" />
+          <span className="shrink-0 mx-4 text-muted-foreground text-xs uppercase tracking-wider">
             Or continue with email
           </span>
-          <div className="flex-grow border-t border-white/10" />
+          <div className="grow border-t border-white/10" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,7 +70,7 @@ export default function AuthForm() {
               >
                 <label className="text-sm font-medium text-white/80 ml-1">Full Name</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <User weight="bold" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
                   <input 
                     type="text" 
                     placeholder="John Doe"
@@ -85,7 +85,7 @@ export default function AuthForm() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-white/80 ml-1">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <EnvelopeSimple weight="bold" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input 
                 type="email" 
                 placeholder="you@example.com"
@@ -105,7 +105,7 @@ export default function AuthForm() {
               )}
             </div>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <LockKey weight="bold" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input 
                 type="password" 
                 placeholder="••••••••"
@@ -120,7 +120,7 @@ export default function AuthForm() {
             className="w-full mt-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(163,230,53,0.3)] hover:shadow-[0_0_30px_rgba(163,230,53,0.5)] group"
           >
             {isLogin ? "Sign In" : "Create Account"}
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </form>
 

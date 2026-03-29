@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BrainCircuit, Mic, Video, Sparkles, CheckCircle2 } from "lucide-react";
+import { Brain, Microphone, VideoCamera, Sparkle, CheckCircle } from "@phosphor-icons/react";
 
 export default function Dashboard() {
   return (
@@ -32,13 +32,13 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 z-10" />
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="w-24 h-24 rounded-full bg-secondary border border-border flex items-center justify-center relative shadow-lg">
-                <BrainCircuit className="w-10 h-10 text-primary" />
+                <Brain weight="duotone" className="w-6 h-6 text-primary" />
                 <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
               </div>
             </div>
             <div className="absolute bottom-4 left-4 z-20">
               <p className="font-medium text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" /> Eva (AI Interviewer)
+                <Sparkle weight="duotone" className="w-4 h-4 text-emerald-400" /> Eva (AI Interviewer)
               </p>
               <p className="text-sm text-gray-300 max-w-md mt-1">
                 "That is an excellent approach to the system design question. Now, how would you handle horizontal scaling in this scenario?"
@@ -53,7 +53,7 @@ export default function Dashboard() {
                <div className="absolute right-3 top-3 bg-red-500/20 text-red-500 px-2 py-1 rounded text-[10px] font-bold tracking-wider flex items-center gap-1 backdrop-blur-md">
                  REC
                </div>
-               <Video className="w-8 h-8 text-muted-foreground" />
+               <VideoCamera className="w-8 h-8 text-muted-foreground" />
             </div>
             
             {/* Real-time Feedback Stream */}
@@ -62,11 +62,11 @@ export default function Dashboard() {
               
               <div className="space-y-3">
                 <div className="flex items-start gap-2 text-sm bg-secondary/50 p-3 rounded-lg border border-border/50">
-                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <span className="text-muted-foreground"><strong className="text-foreground">Tone:</strong> Confident and clear pacing.</span>
                 </div>
                 <div className="flex items-start gap-2 text-sm bg-secondary/50 p-3 rounded-lg border border-border/50">
-                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <span className="text-muted-foreground"><strong className="text-foreground">Clarity:</strong> Good explanation of the CAP theorem.</span>
                 </div>
               </div>
@@ -74,10 +74,10 @@ export default function Dashboard() {
               <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/50">
                  <div className="flex items-center gap-2">
                     <button className="w-10 h-10 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors">
-                      <Mic className="w-4 h-4 text-foreground" />
+                      <Microphone weight="fill" className="w-4 h-4 text-foreground" />
                     </button>
                     <button className="w-10 h-10 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors">
-                      <Video className="w-4 h-4 text-foreground" />
+                      <VideoCamera weight="fill" className="w-4 h-4 text-foreground" />
                     </button>
                  </div>
                  <button className="bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs font-bold px-4 py-2 rounded-full transition-colors">

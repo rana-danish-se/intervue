@@ -1,24 +1,32 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import Feature from "@/components/Feature";
-import HowItWorks from "@/components/HowItWorks";
-import Pricing from "@/components/Pricing";
-import Dashboard from "@/components/Dashboard";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import Hero from "@/components/landing/Hero";
+import ProblemStatement from "@/components/landing/ProblemStatement";
+import HowItWorks from "@/components/landing/HowItWorks";
+import Feature from "@/components/landing/Feature";
+import DemoPreview from "@/components/landing/DemoPreview";
+import Domains from "@/components/landing/Domains";
+import Testimonials from "@/components/landing/Testimonials";
+import Pricing from "@/components/landing/Pricing";
+import CTA from "@/components/landing/CTA";
 
 export default function Home() {
   return (
     <main className="relative min-h-screen bg-background overflow-hidden selection:bg-primary/30">
-      {/* GLOBAL GLOW EFFECTS */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-primary/10 blur-[150px] pointer-events-none" />
+      {/* GLOBAL FLOATING GLOW EFFECTS */}
+      <div className="fixed top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-primary/30 blur-[150px] pointer-events-none mix-blend-screen z-0" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[350px] h-[350px] rounded-full bg-primary/20 blur-[150px] pointer-events-none mix-blend-screen z-0" />
 
       <Navbar />
       <Hero />
-      <Feature />
+      <ProblemStatement />
       <HowItWorks />
+      <Feature />
+      <DemoPreview />
+      <Domains />
+      <Testimonials />
       <Pricing />
-      <Dashboard />
+      <CTA />
       <Footer />
     </main>
   );

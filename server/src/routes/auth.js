@@ -3,7 +3,7 @@ import passport from 'passport';
 import {
   register, verifyEmail, login, googleCallback,
   refreshToken, logout, forgotPassword, resetPassword, getMe
-} from '../controllers/authController.js';
+} from '../controllers/auth.controller.js';
 import { protectRoute } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
