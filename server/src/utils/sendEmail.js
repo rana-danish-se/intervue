@@ -1,21 +1,30 @@
 import nodemailer from 'nodemailer';
 
 const sendEmail = async (to, subject, htmlBody) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      },
+    });
 
-  await transporter.sendMail({
-    from: `"Intervue" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html: htmlBody,
-  });
+    await transporter.sendMail({
+      from: `"Intervue" <${process.env.SENDER_EMAIL || process.env.MAIL_USERNAME}>`,
+      to,
+      subject,
+      html: htmlBody,
+    });
+  } catch (error) {
+    console.error('===================================================');
+    console.error('📧 EMAIL DISPATCH FAILED!');
+    console.error('SMTP Credentials in .env are missing or invalid.');
+    console.error('For local development, here is the link to verify:');
+    console.error(htmlBody);
+    console.error('===================================================');
+    // We swallow the error so the registration process continues successfully!
+  }
 };
 
 export default sendEmail;

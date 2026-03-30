@@ -9,6 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuthStore } from "@/store/authStore";
 
 const transcriptLines = [
   "So, tell me about a time you had to optimize a slow application.",
@@ -18,7 +19,8 @@ const transcriptLines = [
 ];
 
 export default function Hero() {
-  const [visibleLines, setVisibleLines] = useState<number>(0);
+  const [visibleLines, setVisibleLines] = useState(0);
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -69,8 +71,11 @@ export default function Hero() {
         transition={{ duration: 0.5, delay: 0.3 }}
         className="mt-10 flex flex-col sm:flex-row items-center gap-4"
       >
-        <Link href="/auth/register" className="group flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-full text-base font-semibold transition-all shadow-[0_0_30px_rgba(163,230,53,0.2)] hover:shadow-[0_0_40px_rgba(163,230,53,0.4)] w-full sm:w-auto justify-center">
-          Get Started
+        <Link 
+          href={isAuthenticated ? "/dashboard" : "/auth/register"} 
+          className="group flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-full text-base font-semibold transition-all shadow-[0_0_30px_rgba(163,230,53,0.2)] hover:shadow-[0_0_40px_rgba(163,230,53,0.4)] w-full sm:w-auto justify-center"
+        >
+          {isAuthenticated ? "Go to Dashboard" : "Get Started"}
           <ArrowRight
             weight="bold"
             className="w-4 h-4 group-hover:translate-x-1 transition-transform"

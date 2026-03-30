@@ -28,7 +28,7 @@ export const protectRoute = async (req, res, next) => {
 };
 
 export const requireVerifiedEmail = (req, res, next) => {
-  if (!req.user.isEmailVerified) {
+  if (!req.user.isVerified) {
     return next(new AppError('Please verify your email address to access this feature', 403));
   }
   next();

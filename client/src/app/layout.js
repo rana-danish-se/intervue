@@ -1,6 +1,6 @@
 import { Syne, Outfit } from "next/font/google";
 import "./globals.css";
-
+import AuthHydrator from "@/components/auth/AuthHydrator";
 // Headings: bold, expressive, distinctly editorial
 const syne = Syne({
   variable: "--font-syne",
@@ -28,7 +28,10 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${syne.variable} ${outfit.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthHydrator />
+        {children}
+      </body>
     </html>
   );
 }

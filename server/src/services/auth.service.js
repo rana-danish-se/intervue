@@ -16,10 +16,10 @@ export const createUser = async (name, email, password) => {
     email,
     password,
     emailVerifyToken: hashedToken,
-    emailVerifyExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+    emailVerifyExpires: Date.now() + 24 * 60 * 60 * 1000,
   });
 
-  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}`;
+  const verifyUrl = `${process.env.CLIENT_URL}/auth/verify/${rawToken}`;
 
   await sendEmail(
     email,
@@ -48,8 +48,8 @@ export const findOrCreateGoogleUser = async (profile) => {
       if (!user.avatar && profile.photos && profile.photos.length > 0) {
         user.avatar = profile.photos[0].value;
       }
-      if (!user.isEmailVerified) {
-        user.isEmailVerified = true;
+      if (!user.isVerified) {
+        user.isVerified = true;
       }
       await user.save();
       return user;
@@ -61,7 +61,7 @@ export const findOrCreateGoogleUser = async (profile) => {
     name: profile.displayName,
     email: email || `${profile.id}@placeholder.google.com`,
     avatar: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
-    isEmailVerified: true,
+    isVerified: true,
   });
 
   return newUser;
@@ -82,11 +82,10 @@ export const verifyEmailToken = async (token) => {
     throw new Error('Token invalid or expired');
   }
 
-  user.isEmailVerified = true;
+  user.isVerified = true;
   user.emailVerifyToken = null;
   user.emailVerifyExpires = null;
   await user.save();
-
   return user;
 };
 

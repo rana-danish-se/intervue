@@ -66,7 +66,7 @@ export const register = asyncHandler(async (req, res, next) => {
 export const verifyEmail = asyncHandler(async (req, res, next) => {
   try {
     await authService.verifyEmailToken(req.params.token);
-    res.redirect(`${process.env.CLIENT_URL}/login?verified=true`);
+    res.status(200).json({ success: true, message: 'Email successfully verified' });
   } catch (error) {
     if (error.message === 'Token invalid or expired') {
       return next(new AppError(error.message, 400));
@@ -81,7 +81,7 @@ export const login = asyncHandler(async (req, res, next) => {
   try {
     const user = await authService.loginUser(email, password);
 
-    if (!user.isEmailVerified) {
+    if (!user.isVerified) {
       return next(new AppError('Please verify your email first', 403));
     }
 
