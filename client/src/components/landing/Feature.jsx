@@ -33,7 +33,7 @@ const features = [
 
 export default function Feature() {
   return (
-    <section id="features" className="py-24 relative overflow-hidden bg-black/50 border-y border-white/5">
+    <section id="features" className="py-14 relative overflow-hidden  border-y border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
           <motion.h2 

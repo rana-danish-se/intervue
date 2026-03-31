@@ -50,7 +50,7 @@ export default function Hero() {
         className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground max-w-4xl"
       >
         Talk smarter. <br />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-400 italic font-medium">
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-400 font-semibold">
           Interview faster.
         </span>
       </motion.h1>
@@ -126,7 +126,7 @@ export default function Hero() {
               className={`p-3 rounded-lg max-w-[85%] ${
                 index % 2 === 0
                   ? "bg-white/5 border border-white/10 text-white"
-                  : "bg-primary/10 border border-primary/20 text-primary-foreground ml-auto"
+                  : "bg-primary/10 border border-primary/20  text-neutral-500 ml-auto"
               }`}
             >
               {line}

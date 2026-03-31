@@ -13,7 +13,7 @@ const domains = [
 
 export default function Domains() {
   return (
-    <section className="py-20 relative bg-black/50 border-y border-white/5 overflow-hidden">
+    <section className="py-14 relative  border-y border-white/5 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-10">
           Supported Interview Domains
