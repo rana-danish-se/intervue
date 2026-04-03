@@ -1,56 +1,46 @@
 import axiosInstance from '../lib/axiosInstance';
 
-/**
- * auth.service.js
- * 
- * This file encapsulates all the API calls related to authentication.
- * By keeping them separated from React components, our code remains 
- * extremely clean, reusable, and easy to test.
- */
+
 
 export const authService = {
-  /**
-   * Register a new user
-   * @param {Object} userData - { name, email, password }
-   */
   register: async (userData) => {
     const response = await axiosInstance.post('/auth/register', userData);
     return response.data;
   },
 
-  /**
-   * Verify email via secure token
-   */
   verifyEmail: async (token) => {
-    // Note: The backend route is still /api/auth/verify-email/:token
     const response = await axiosInstance.get(`/auth/verify-email/${token}`);
     return response.data;
   },
 
-  /**
-   * Login an existing user
-   * @param {Object} credentials - { email, password }
-   */
   login: async (credentials) => {
     const response = await axiosInstance.post('/auth/login', credentials);
     return response.data;
   },
 
-  /**
-   * Get the current user's profile
-   * Uses the automatically attached HTTP-Only browser cookies!
-   */
   getMe: async () => {
     const response = await axiosInstance.get('/auth/me');
     return response.data;
   },
 
-  /**
-   * Logout the user
-   * Instructs the backend to destroy the HTTP-Only cookies.
-   */
   logout: async () => {
     const response = await axiosInstance.post('/auth/logout');
     return response.data;
   },
+
+  forgotPassword: async (email) => {
+    const response = await axiosInstance.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (token, newPassword) => {
+    const response = await axiosInstance.post(`/auth/reset-password/${token}`, { newPassword });
+    return response.data;
+  },
 };
+
+/**
+ * Role: Authentication API Service Layer
+ * What it has: `register` creates a new user account by posting name, email, and password to the backend. `verifyEmail` confirms a user's email using the URL token from the verification email. `login` authenticates a user with email and password and returns a session. `getMe` fetches the currently logged-in user's profile using the browser's HTTP-Only cookies. `logout` tells the backend to destroy the active session cookies. `forgotPassword` dispatches a password reset email to the given address. `resetPassword` posts a new password to the backend using the secure token from the reset email link.
+ * Where it is being used: Imported by `hooks/useAuthInit.js`, `components/auth/LoginForm.jsx`, `components/auth/RegisterForm.jsx`, `app/auth/forgot-password/page.jsx`, `app/auth/reset-password/[token]/page.jsx`, `app/auth/verify/[token]/page.jsx`, and `app/dashboard/page.jsx`.
+ */

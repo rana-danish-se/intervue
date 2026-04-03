@@ -79,3 +79,9 @@ export default function Feature() {
     </section>
   );
 }
+
+/**
+ * Role: Features/Capabilities Landing Section
+ * What it has: This is a pure UI component with no functions. It maps over the static `features` array to render animated feature cards describing the platform's core capabilities (Voice-Based AI, Adaptive Follow-Ups, Multi-Domain Support, Resume-Aware, Debrief Reports).
+ * Where it is being used: Rendered inside `pages/Home.jsx` after the `HowItWorks` section.
+ */

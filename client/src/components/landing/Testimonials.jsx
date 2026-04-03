@@ -72,3 +72,9 @@ export default function Testimonials() {
     </section>
   );
 }
+
+/**
+ * Role: Testimonials Landing Section
+ * What it has: This is a pure UI component with no functions. It maps over the static `testimonials` array to render 3 animated quote cards from beta testers.
+ * Where it is being used: Rendered inside `pages/Home.jsx` after `Domains`.
+ */

@@ -25,12 +25,10 @@ passport.use(
   )
 );
 
-// Serialize user into the sessions (Required by passport structurally)
 passport.serializeUser((user, done) => {
   done(null, user._id);
 });
 
-// Deserialize user from the sessions (Required by passport structurally)
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
@@ -39,3 +37,16 @@ passport.deserializeUser(async (id, done) => {
     done(error, null);
   }
 });
+
+/*
+FILE: src/configs/passport.js
+ROLE: Passport.js strategy configuration. Registers the Google OAuth 2.0 strategy and defines serialize/deserialize hooks. This file is executed for its side-effects (mutating the global passport instance) and does not export anything.
+
+FUNCTIONS / LOGIC:
+  - GoogleStrategy callback (accessToken, refreshToken, profile, done) — receives the OAuth profile from Google after a successful authentication redirect, delegates to authService.findOrCreateGoogleUser(profile) to look up or create a user in MongoDB, then calls done(null, user) to signal success. On error, calls done(error, null).
+  - passport.serializeUser(user, done) — extracts user._id from the authenticated user object and stores it in the session. Required by Passport's internal architecture even though session-based auth is not actively used (JWT cookies are used instead).
+  - passport.deserializeUser(id, done) — takes the stored _id, queries User.findById(id) from MongoDB, and attaches the full user document back to req.user. Passes any DB error to done.
+
+IMPORTED BY:
+  - src/app.js — imports this file with `import './configs/passport.js'` so that the strategy is registered on the passport singleton before any route handler runs.
+*/

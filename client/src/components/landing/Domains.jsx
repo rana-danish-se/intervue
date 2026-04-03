@@ -19,7 +19,6 @@ export default function Domains() {
           Supported Interview Domains
         </p>
 
-        {/* Marquee or Flex Row */}
         <div className="flex flex-wrap justify-center gap-4 md:gap-8 lg:gap-12">
           {domains.map((domain, index) => (
             <motion.div
@@ -39,3 +38,9 @@ export default function Domains() {
     </section>
   );
 }
+
+/**
+ * Role: Supported Domains Landing Section
+ * What it has: This is a pure UI component with no functions. It maps over the static `domains` array to render animated pill-shaped badges displaying the interview domains the platform supports (Software Engineering, HR, Sales, Management, Call Center).
+ * Where it is being used: Rendered inside `pages/Home.jsx` after `DemoPreview`.
+ */

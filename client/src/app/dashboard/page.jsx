@@ -9,13 +9,12 @@ import { authService } from "@/services/auth.service";
 
 export default function DashboardPage() {
   const router = useRouter();
-  // Call our lightweight global store directly
+
   const { user, isAuthenticated, isLoading, clearAuthData } = useAuthStore();
 
-  // Route Protection Middleware right here in the component
+
   useEffect(() => {
-    // If the backend silent check finished (isLoading = false), 
-    // AND the user still returned false for authentication, kick them out!
+
     if (!isLoading && !isAuthenticated) {
       router.push("/auth/login");
     }
@@ -23,19 +22,18 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      // Secretly tell the backend to destroy the secure HTTP-Only cookies
+
       await authService.logout();
-      // Instantly wipe the global frontend state
+
       clearAuthData();
-      // Redirect to the login visual
+
       router.push("/auth/login");
     } catch (error) {
       console.error("Logout failed", error);
     }
   };
 
-  // While checking cookies on page refresh, show a smooth loading state
-  // This prevents the page from flashing or exposing private data before redirecting.
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -47,10 +45,10 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-black text-white p-8 relative overflow-hidden">
       
-      {/* Background glow for depth */}
+
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-      {/* Top Navbar */}
+
       <header className="flex items-center justify-between border-b border-white/10 pb-6 mb-10 max-w-6xl mx-auto">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/30 shadow-[0_0_15px_rgba(163,230,53,0.2)]">
@@ -77,14 +75,14 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      {/* Main Content Dashboard Area */}
+
       <main className="max-w-6xl mx-auto mt-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="p-8 md:p-12 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl relative overflow-hidden"
         >
-          {/* Subtle glow inside the card */}
+
           <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
 
           <h2 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
@@ -96,7 +94,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            {/* Tier Widget */}
+
             <div className="p-7 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white/90">Current Plan</h3>
@@ -105,7 +103,7 @@ export default function DashboardPage() {
               <p className="text-2xl font-bold text-white capitalize">{user?.plan || 'Free'} Tier</p>
             </div>
             
-            {/* Status Widget */}
+
             <div className="p-7 rounded-2xl bg-white/5 border border-white/10 hover:border-green-500/50 transition-colors">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white/90">Account Status</h3>
@@ -116,7 +114,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Profile Widget */}
+
             <div className="p-7 rounded-2xl bg-white/5 border border-white/10">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white/90">User ID</h3>
@@ -130,3 +128,10 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+/**
+ * Role: Protected Dashboard Interface
+ * What it has: 2 functions
+ * What it is doing: The `handleLogout` function clears local Zustand state and sends a logout ping to securely destroy HTTP cookies on the server before redirecting to login. The `DashboardPage` component acts as a protected route shell, evaluating the auth state synchronously and rendering the authenticated user's workspace UI elements (avatar, tier, status) while intercepting unauthorized users.
+ * Where it is being used: Mounted at `/dashboard` strictly for authenticated sessions.
+ */

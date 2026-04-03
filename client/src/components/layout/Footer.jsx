@@ -5,3 +5,9 @@ export default function Footer() {
     </footer>
   );
 }
+
+/**
+ * Role: Global Page Footer
+ * What it has: This is a pure UI component with no functions. It renders a simple static footer bar with the dynamic copyright year and the brand tagline.
+ * Where it is being used: Rendered at the bottom of `pages/Home.jsx` (landing page) and `app/auth/layout.tsx` (all authentication route pages).
+ */

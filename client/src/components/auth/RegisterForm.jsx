@@ -20,7 +20,6 @@ export default function RegisterForm() {
   const router = useRouter();
 
   useEffect(() => {
-    // If the user manually navigates to /register but is already logged in, push to dashboard
     if (useAuthStore.getState().isAuthenticated) {
       router.push("/dashboard");
     }
@@ -43,7 +42,6 @@ export default function RegisterForm() {
 
   return (
     <div className="w-full max-w-md mx-auto p-8 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-      {/* Top middle semicircle glow */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-100 h-100 rounded-full bg-primary/20 blur-[80px] pointer-events-none" />
 
       <div className="relative z-10">
@@ -172,3 +170,9 @@ export default function RegisterForm() {
     </div>
   );
 }
+
+/**
+ * Role: Registration Form UI and Submission Handler
+ * What it has: `onSubmit` sends the user's name, email, and password to `authService.register`, displays a success message prompting email verification, or surfaces an API error if registration fails. The inline `useEffect` redirects already-authenticated users away from the register page directly to `/dashboard`.
+ * Where it is being used: Rendered by the `RegisterPage` route at `/auth/register`.
+ */

@@ -2,9 +2,7 @@
 
 export default function GoogleButton() {
   const handleGoogleLogin = () => {
-    // Redirect the browser window straight to your Express backend Google Auth route.
-    // The backend will handle the redirect to Google's consent screen.
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
     window.location.href = `${API_URL}/auth/google`;
   };
 
@@ -24,3 +22,9 @@ export default function GoogleButton() {
     </button>
   );
 }
+
+/**
+ * Role: Google OAuth Entry Button
+ * What it has: `handleGoogleLogin` reads the backend URL from the environment and hard-redirects the browser to the Express Google OAuth entry route (`/api/auth/google`), delegating the full OAuth dance to the server.
+ * Where it is being used: Rendered inside both `LoginForm.jsx` and `RegisterForm.jsx` above the email/password form section.
+ */

@@ -10,7 +10,7 @@ export default function VerifyEmailPage() {
   const router = useRouter();
   const params = useParams();
   
-  const [status, setStatus] = useState("loading"); // loading, success, error
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("Verifying your secure token...");
   const hasFetched = useRef(false);
 
@@ -23,7 +23,7 @@ export default function VerifyEmailPage() {
         setStatus("success");
         setMessage("Email verified successfully! Redirecting you to login...");
         
-        // Push user to login after 3 seconds
+
         setTimeout(() => {
           router.push("/auth/login?verified=true");
         }, 3000);
@@ -40,7 +40,7 @@ export default function VerifyEmailPage() {
     <div className="w-full h-[60vh] flex items-center justify-center">
       <div className="w-full max-w-md mx-auto p-8 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl relative overflow-hidden text-center">
         
-        {/* Glow effect */}
+
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-100 h-100 rounded-full bg-primary/20 blur-[80px] pointer-events-none" />
 
         {status === "loading" && (
@@ -88,3 +88,10 @@ export default function VerifyEmailPage() {
     </div>
   );
 }
+
+/**
+ * Role: Email Verification Handler
+ * What it has: 2 functions
+ * What it is doing: The `verify` async function explicitly calls the backend `verifyEmail` service using the URL token parameters. The `VerifyEmailPage` component manages the animated loading states UI (loading, success, error) and automatically redirects the user to the login screen after a successful database update.
+ * Where it is being used: Rendered dynamically by Next.js at `/auth/verify/[token]` when a user clicks the verify link sent to their email.
+ */

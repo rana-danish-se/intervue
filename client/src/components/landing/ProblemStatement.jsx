@@ -41,7 +41,7 @@ export default function ProblemStatement() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-lg max-w-2xl mx-auto"
           >
-            The hardest part of an interview isn't what you know — it's how you communicate it under pressure.
+            The hardest part of an interview isn&apos;t what you know — it&apos;s how you communicate it under pressure.
           </motion.p>
         </div>
 
@@ -71,3 +71,9 @@ export default function ProblemStatement() {
     </section>
   );
 }
+
+/**
+ * Role: Problem Statement Landing Section
+ * What it has: This is a pure UI component with no functions. It maps over the static `problems` array to render 3 animated cards highlighting why traditional interview prep fails (static question banks, zero realistic practice, no actionable feedback).
+ * Where it is being used: Rendered inside `pages/Home.jsx` after the `Hero` section.
+ */

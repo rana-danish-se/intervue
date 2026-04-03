@@ -54,7 +54,6 @@ const plans = [
 export default function Pricing() {
   return (
     <section id="pricing" className="py-24 relative overflow-hidden">
-      {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -145,3 +144,9 @@ export default function Pricing() {
     </section>
   );
 }
+
+/**
+ * Role: Pricing Tiers Landing Section
+ * What it has: This is a pure UI component with no functions. It maps over the static `plans` array (Starter, Pro, Enterprise) to render animated pricing cards with feature lists and call-to-action buttons.
+ * Where it is being used: Rendered inside `pages/Home.jsx` after `Testimonials`.
+ */

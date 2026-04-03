@@ -94,7 +94,6 @@ export default function Hero() {
         transition={{ duration: 0.7, delay: 0.5 }}
         className="mt-16 w-full max-w-3xl border border-white/10 bg-black/50 backdrop-blur-xl rounded-2xl p-6 shadow-2xl overflow-hidden relative"
       >
-        {/* Absolute glow behind the transcript window */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
 
         <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-4">
@@ -147,3 +146,9 @@ export default function Hero() {
     </section>
   );
 }
+
+/**
+ * Role: Hero Landing Section
+ * What it has: The inline `useEffect` sets up an `interval` that increments `visibleLines` every 2 seconds to progressively reveal transcript lines in the animated chat widget, simulating a live AI interview conversation.
+ * Where it is being used: Rendered as the first visible section inside `pages/Home.jsx`.
+ */

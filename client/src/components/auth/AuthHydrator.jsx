@@ -2,14 +2,13 @@
 
 import { useAuthInit } from "@/hooks/useAuthInit";
 
-/**
- * AuthHydrator
- * 
- * A silent, invisible Client Component whose sole purpose is to execute
- * the `useAuthInit` hook globally across the Next.js application without
- * accidentally forcing the RootLayout out of Server Component mode.
- */
 export default function AuthHydrator() {
   useAuthInit();
   return null;
 }
+
+/**
+ * Role: Global Auth Session Bootstrapper
+ * What it has: `AuthHydrator` is a silent, renderless client component that calls `useAuthInit` to trigger a background authentication session check on every full app load.
+ * Where it is being used: Mounted inside `app/layout.js` inside the `<ProgressBarProvider>`, ensuring the auth state is hydrated before any page renders.
+ */

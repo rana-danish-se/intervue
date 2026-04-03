@@ -12,7 +12,6 @@ export default function Dashboard() {
         transition={{ duration: 0.7, delay: 0.4 }}
         className="relative rounded-2xl border border-border/50 bg-secondary/30 backdrop-blur-xl p-2 shadow-2xl overflow-hidden"
       >
-        {/* Top Bar of the Mockup */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-background/50 rounded-t-xl">
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -25,9 +24,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        {/* Mockup Content */}
         <div className="grid md:grid-cols-3 gap-4 p-4 min-h-[400px]">
-          {/* AI Video Feed Simulation */}
           <div className="md:col-span-2 rounded-xl bg-background/80 border border-border/50 flex flex-col relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 z-10" />
             <div className="flex-1 flex items-center justify-center p-8">
@@ -41,14 +38,12 @@ export default function Dashboard() {
                 <Sparkle weight="duotone" className="w-4 h-4 text-emerald-400" /> Eva (AI Interviewer)
               </p>
               <p className="text-sm text-gray-300 max-w-md mt-1">
-                "That is an excellent approach to the system design question. Now, how would you handle horizontal scaling in this scenario?"
+                &quot;That is an excellent approach to the system design question. Now, how would you handle horizontal scaling in this scenario?&quot;
               </p>
             </div>
           </div>
 
-          {/* Sidebar / Code / Controls */}
           <div className="flex flex-col gap-4">
-            {/* User Video feed */}
             <div className="h-40 rounded-xl bg-background/80 border border-border/50 flex items-center justify-center relative overflow-hidden group">
                <div className="absolute right-3 top-3 bg-red-500/20 text-red-500 px-2 py-1 rounded text-[10px] font-bold tracking-wider flex items-center gap-1 backdrop-blur-md">
                  REC
@@ -56,7 +51,6 @@ export default function Dashboard() {
                <VideoCamera className="w-8 h-8 text-muted-foreground" />
             </div>
             
-            {/* Real-time Feedback Stream */}
             <div className="flex-1 rounded-xl bg-background/80 border border-border/50 p-4 flex flex-col">
               <h3 className="text-sm font-bold text-foreground mb-4">Real-time Analysis</h3>
               
@@ -91,3 +85,9 @@ export default function Dashboard() {
     </section>
   );
 }
+
+/**
+ * Role: Landing Page Interview Session UI Mockup
+ * What it has: This is a pure UI component with no functions. It renders a static animated mockup of the live interview session interface — including a fake AI video feed, a user camera panel, and a real-time analysis sidebar with tone and clarity feedback items.
+ * Where it is being used: This component is defined but not currently rendered in `pages/Home.jsx`. `DemoPreview.jsx` serves as the active demo section on the landing page.
+ */

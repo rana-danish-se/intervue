@@ -65,7 +65,6 @@ export default function HowItWorks() {
                 {step.icon}
               </div>
               
-              {/* Connecting line for desktop */}
               {index !== steps.length - 1 && (
                 <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-white/10 to-transparent -z-0" />
               )}
@@ -79,3 +78,9 @@ export default function HowItWorks() {
     </section>
   );
 }
+
+/**
+ * Role: How It Works Landing Section
+ * What it has: This is a pure UI component with no functions. It maps over the static `steps` array (3 steps) to render animated numbered step cards describing the user journey — choosing a role, doing a voice interview, and receiving the debrief report.
+ * Where it is being used: Rendered inside `pages/Home.jsx` after `ProblemStatement`.
+ */

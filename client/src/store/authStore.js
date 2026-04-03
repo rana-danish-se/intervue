@@ -1,21 +1,10 @@
 import { create } from 'zustand';
 
-/**
- * useAuthStore
- * 
- * This is our global state container for Authentication. Any component in 
- * our entire Next.js app can simply say `const { user } = useAuthStore()` 
- * to instantly see who is logged in without passing Props down from layout.
- */
 export const useAuthStore = create((set) => ({
-  // ---- GLOBAL STATE ----
-  user: null,               // Holds the profile details (name, email, avatar, etc.)
-  isAuthenticated: false,   // Easily hide/show the "Login" or "Dashboard" buttons
-  isLoading: true,          // Starts as true when the app boots up, while checking cookies
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
 
-  // ---- ACTIONS ----
-  
-  // Call immediately after `authService.login()` or `authService.getMe()` succeeds
   setAuthData: (userData) => {
     set({
       user: userData,
@@ -24,7 +13,6 @@ export const useAuthStore = create((set) => ({
     });
   },
 
-  // Call immediately after `authService.logout()` or if the refresh token completely expires
   clearAuthData: () => {
     set({
       user: null,
@@ -33,8 +21,13 @@ export const useAuthStore = create((set) => ({
     });
   },
   
-  // Manual override for loading indicator
   setLoading: (status) => {
     set({ isLoading: status });
   }
 }));
+
+/**
+ * Role: Global Authentication State Store
+ * What it has: `setAuthData` populates the store with the authenticated user's profile data and sets `isAuthenticated` to true — called after `authService.login()` or `authService.getMe()` succeeds. `clearAuthData` resets the user to null and `isAuthenticated` to false — called after `authService.logout()` or when the refresh token expires. `setLoading` manually toggles the `isLoading` flag to control loading indicators across pages.
+ * Where it is being used: Consumed by `AuthHydrator.jsx`, `LoginForm.jsx`, `RegisterForm.jsx`, `Navbar.jsx`, `Hero.jsx`, `CTA.jsx`, `DashboardPage`, and the `useAuthInit` hook.
+ */

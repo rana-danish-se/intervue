@@ -17,7 +17,6 @@ export default function AuthForm() {
 
   return (
     <div className="w-full max-w-md mx-auto p-8 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-      {/* Background glow specific to the card */}
       <div className="absolute top-[-20%] right-[-20%] w-64 h-64 rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
       <div className="absolute bottom-[-20%] left-[-20%] w-64 h-64 rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
 
@@ -38,7 +37,6 @@ export default function AuthForm() {
           </p>
         </div>
 
-        {/* Google OAuth Button */}
         <button className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all mb-6 group">
           <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25C22.56 11.47 22.49 10.74 22.37 10.04H12V14.22H17.93C17.67 15.56 16.91 16.7 15.76 17.47V20.24H19.33C21.41 18.32 22.56 15.53 22.56 12.25Z" fill="#4285F4"/>
@@ -138,3 +136,9 @@ export default function AuthForm() {
     </div>
   );
 }
+
+/**
+ * Role: Legacy Combined Auth Form (Login + Register toggle)
+ * What it has: `toggleMode` switches the form between login and signup states. `handleSubmit` intercepts form submission, prevents default browser behaviour, and logs the current mode — intended as a placeholder pending full implementation.
+ * Where it is being used: This is an older-generation combined form component. It is NOT currently used in routing; the active login and registration flows are handled separately by `LoginForm.jsx` and `RegisterForm.jsx`.
+ */

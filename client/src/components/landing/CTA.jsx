@@ -10,7 +10,6 @@ export default function CTA() {
 
   return (
     <section className="py-22 relative overflow-hidden  ">
-      {/* Intense center glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 blur-[150px] -z-10 rounded-full pointer-events-none" />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -47,7 +46,6 @@ export default function CTA() {
             {isAuthenticated ? "Go to Dashboard" : "Create Your Free Account"}
             <ArrowRight weight="bold" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             
-            {/* Inner glow ring on hover */}
             <div className="absolute inset-0 rounded-full border border-white/40 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
         </motion.div>
@@ -55,3 +53,9 @@ export default function CTA() {
     </section>
   );
 }
+
+/**
+ * Role: Landing Call-To-Action Section
+ * What it has: This is a pure UI component with no functions. It reads the `isAuthenticated` state from `useAuthStore` to conditionally render the button label and link destination — sending authenticated users to `/dashboard` and unauthenticated users to `/auth/register`.
+ * Where it is being used: Rendered near the bottom of the landing page inside `pages/Home.jsx`, directly before the `Footer`.
+ */

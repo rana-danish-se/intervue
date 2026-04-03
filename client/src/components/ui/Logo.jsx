@@ -20,3 +20,9 @@ export default function Logo() {
     </Link>
   );
 }
+
+/**
+ * Role: Brand Logo UI Component
+ * What it has: This is a pure UI component with no functions. It renders the Intervue logo image alongside the brand name text, wrapping both in a Next.js `<Link>` to the home route (`/`).
+ * Where it is being used: Rendered inside `Navbar.jsx`, appearing in the top-left of all pages.
+ */

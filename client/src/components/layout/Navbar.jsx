@@ -69,3 +69,9 @@ export default function Navbar() {
     </motion.header>
   );
 }
+
+/**
+ * Role: Global Application Navigation Bar
+ * What it has: `handleScroll` listens to the browser scroll event and toggles a `scrolled` boolean that switches the navbar between a transparent and a glassmorphic pill-style background. `scrollToSection` intercepts anchor link clicks and uses `scrollIntoView` to smoothly animate the page to the target section by its DOM element ID.
+ * Where it is being used: Rendered at the top of `pages/Home.jsx` (landing page) and `components/auth/layout.tsx` (all auth routes), making it globally visible across the application.
+ */

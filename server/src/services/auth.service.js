@@ -100,7 +100,6 @@ export const loginUser = async (email, password) => {
     throw new Error('Invalid email or password');
   }
 
-  // Remove password from memory before returning
   user.password = undefined;
 
   return user;
@@ -109,14 +108,13 @@ export const loginUser = async (email, password) => {
 export const createPasswordResetToken = async (email) => {
   const user = await User.findOne({ email });
   if (!user) {
-    // Return null instead of error to prevent email enumeration
     return null;
   }
 
   const { rawToken, hashedToken } = generateVerifyToken();
 
   user.passwordResetToken = hashedToken;
-  user.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+  user.passwordResetExpires = Date.now() + 60 * 60 * 1000;
   await user.save();
 
   return { user, rawToken };
@@ -144,3 +142,20 @@ export const resetUserPassword = async (token, newPassword) => {
 
   return user;
 };
+
+/*
+FILE: src/services/auth.service.js
+ROLE: Business logic layer for all authentication operations. Isolates database queries and domain rules from the HTTP controller layer. All functions are pure async operations that either return data or throw descriptive Errors caught by the controller.
+
+FUNCTIONS / LOGIC:
+  - createUser(name, email, password) — queries User.findOne({ email }) to check for an existing account; throws 'Email already in use' if found. Calls generateVerifyToken() to produce a rawToken (sent to the user) and hashedToken (stored in the DB). Creates the user document via User.create() with emailVerifyToken and a 24-hour emailVerifyExpires. Builds a verification URL using CLIENT_URL and calls sendEmail() with an HTML link. Returns the created user document.
+  - findOrCreateGoogleUser(profile) — receives the OAuth profile object from Passport. Extracts the primary email from profile.emails[0]. First tries User.findOne({ googleId: profile.id }); returns immediately if found. Then tries User.findOne({ email }) to detect pre-existing email accounts — if found, links the googleId, adds the avatar if missing, sets isVerified = true, saves, and returns. If no existing user is found, creates a new User.create() document with googleId, displayName, email (fallback placeholder if Google provides no email), avatar, and isVerified = true.
+  - verifyEmailToken(token) — hashes the raw URL token using crypto SHA-256, queries User.findOne matching emailVerifyToken and emailVerifyExpires > now. Throws 'Token invalid or expired' if not found. Sets isVerified = true and clears emailVerifyToken and emailVerifyExpires, then saves and returns the user.
+  - loginUser(email, password) — queries User.findOne({ email }).select('+password') to include the normally-hidden password field. Throws 'Invalid email or password' if user not found (avoids revealing which field failed). Calls user.comparePassword(password) for bcrypt verification; throws the same error on mismatch. Strips user.password from the in-memory object before returning.
+  - createPasswordResetToken(email) — queries User.findOne({ email }); returns null if not found (controller uses this to send a vague success response preventing enumeration). Calls generateVerifyToken(), stores the hashedToken in passwordResetToken and sets passwordResetExpires to now + 1 hour, then saves. Returns { user, rawToken } so the controller can build and email the reset URL.
+  - resetUserPassword(token, newPassword) — hashes the raw token with SHA-256, queries User.findOne matching passwordResetToken and passwordResetExpires > now. Throws 'Token invalid or expired' if not found. Assigns newPassword to user.password (triggering the pre-save bcrypt hook), clears passwordResetToken and passwordResetExpires, saves, and returns the updated user.
+
+IMPORTED BY:
+  - src/controllers/auth.controller.js — imports all named exports via `import * as authService` and calls them within each controller handler.
+  - src/configs/passport.js — imports { findOrCreateGoogleUser } to use inside the GoogleStrategy verify callback.
+*/

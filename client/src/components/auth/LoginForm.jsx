@@ -9,14 +9,15 @@ import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import GoogleButton from "./GoogleButton";
+import { useToastStore } from "@/store/toastStore";
 
 export default function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
-  const [urlMessage, setUrlMessage] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const setAuthData = useAuthStore((state) => state.setAuthData);
+  const showToast = useToastStore((state) => state.showToast);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,11 +27,17 @@ export default function LoginForm() {
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("session_expired")) {
-      setUrlMessage({ type: "warning", text: "Your session has expired. Please log in again securely." });
+      showToast("Your session has expired. Please log in again securely.", "warning");
     } else if (params.get("verified")) {
-      setUrlMessage({ type: "success", text: "Email successfully verified! You can now log in." });
+      showToast("Email successfully verified! You can now log in.", "success");
+    } else if (params.get("reset") === "success") {
+      showToast("Your password has been reset! You can now log in.", "success");
     }
-  }, [router]);
+    
+    if (params.toString()) {
+        router.replace("/auth/login", { scroll: false });
+    }
+  }, [router, showToast]);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -49,7 +56,6 @@ export default function LoginForm() {
 
   return (
     <div className="w-full max-w-md mx-auto p-8 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-      {/* Top middle semicircle glow */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-100 h-100 rounded-full bg-primary/20 blur-[80px] pointer-events-none" />
 
       <div className="relative z-10">
@@ -66,7 +72,6 @@ export default function LoginForm() {
           </p>
         </div>
 
-        {/* Extracted Google OAuth Button Component */}
         <GoogleButton />
 
         <div className="relative flex items-center mb-6">
@@ -78,20 +83,7 @@ export default function LoginForm() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          
-          {/* URL Status Messages */}
-          {urlMessage && urlMessage.type === "success" && (
-            <div className="bg-green-500/10 border border-green-500/50 text-green-500 text-sm p-3 rounded-lg text-center">
-              {urlMessage.text}
-            </div>
-          )}
-          {urlMessage && urlMessage.type === "warning" && (
-            <div className="bg-orange-500/10 border border-orange-500/50 text-orange-400 text-sm p-3 rounded-lg text-center">
-              {urlMessage.text}
-            </div>
-          )}
 
-          {/* Form Error Message */}
           {apiError && (
             <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded-lg text-center">
               {apiError}
@@ -177,3 +169,9 @@ export default function LoginForm() {
     </div>
   );
 }
+
+/**
+ * Role: Login Form UI and Submission Handler
+ * What it has: `onSubmit` sends the user's email and password to `authService.login`, saves the returned user object in the global store via `setAuthData`, and redirects to `/dashboard` on success. The inline `useEffect` runs once on mount — it checks if the user is already authenticated (redirecting them early), reads URL query parameters to trigger the appropriate toast via `showToast`, then strips the parameters from the URL to prevent re-triggering on refresh.
+ * Where it is being used: Rendered by the `LoginPage` route at `/auth/login`.
+ */
