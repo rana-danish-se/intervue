@@ -13,9 +13,7 @@ export function useAuthInit() {
     const verifyUserSession = async () => {
       try {
         setLoading(true);
-
         const responseData = await authService.getMe();
-
         if (responseData && responseData.user) {
           setAuthData(responseData.user);
         } else {
