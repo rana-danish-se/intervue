@@ -22,6 +22,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 /**
  * Role: Authentication Module Layout
  * What it has: 1 pure UI component
- * What it is doing: The `AuthLayout` function acts as a wrapper for all internal authentication routes. It renders the global `Navbar`, `Toast` notifications, and `Footer`, while centering the currently active child route.
+ * What it is doing: The `AuthLayout` function acts as a wrapper for all internal authentication routes. 
+ * It renders the global `Navbar`, `Toast` notifications, and `Footer`, while centering the currently active child route.
  * Where it is being used: Next.js applies this layout structure to all routes under `/auth/*`.
  */

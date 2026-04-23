@@ -108,6 +108,7 @@ export default function ForgotPasswordPage() {
 /**
  * Role: Forgot Password Interface
  * What it has: 2 functions
- * What it is doing: The `onSubmit` function evaluates the submitted email and dispatches a request to the `authService` to generate a reset link, triggering a global toast notification on completion. The `ForgotPasswordPage` function renders the UI form module and securely manages local input states and API errors.
+ * What it is doing: The `onSubmit` function evaluates the submitted email and dispatches a request to the `authService` to generate a reset link, triggering a global toast notification on completion.
+ *  The `ForgotPasswordPage` function renders the UI form module and securely manages local input states and API errors.
  * Where it is being used: Mounted by Next.js at the `/auth/forgot-password` route.
  */
