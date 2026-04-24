@@ -1,137 +1,209 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { SignOut, User, CircleNotch, Lightning } from "@phosphor-icons/react";
 import { useAuthStore } from "@/store/authStore";
-import { authService } from "@/services/auth.service";
+import { 
+  Briefcase, 
+  Code, 
+  Brain, 
+  TrendUp, 
+  Lightbulb 
+} from "@phosphor-icons/react";
 
-export default function DashboardPage() {
-  const router = useRouter();
-
-  const { user, isAuthenticated, isLoading, clearAuthData } = useAuthStore();
-
-
-  useEffect(() => {
-
-    if (!isLoading && !isAuthenticated) {
-      router.push("/auth/login");
-    }
-  }, [isLoading, isAuthenticated, router]);
-
-  const handleLogout = async () => {
-    try {
-
-      await authService.logout();
-
-      clearAuthData();
-
-      router.push("/auth/login");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
-
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <CircleNotch weight="bold" className="w-12 h-12 text-primary animate-spin" />
-      </div>
-    );
-  }
+export default function DashboardHome() {
+  const { user } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 relative overflow-hidden">
-      
+    <div className="p-8 max-w-7xl mx-auto pb-24">
+      {/* Header section */}
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+          Welcome back, {user?.name?.split(' ')[0] || "Alex"}
+        </h1>
+        <p className="text-white/60 text-lg">
+          You're in the top 5% of candidates this week. Keep the momentum going.
+        </p>
+      </div>
 
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
-
-
-      <header className="flex items-center justify-between border-b border-white/10 pb-6 mb-10 max-w-6xl mx-auto">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/30 shadow-[0_0_15px_rgba(163,230,53,0.2)]">
-            {user?.avatar ? (
-              <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <User weight="fill" className="w-7 h-7" />
-            )}
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
-              {user?.name || "Guest User"}
-            </h1>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="p-6 rounded-2xl bg-[#111111] border border-white/5">
+          <p className="text-[11px] text-white/40 font-semibold tracking-wider uppercase mb-4">Total Interviews</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-5xl font-bold text-[#A3E635]">24</h2>
+            <span className="text-sm text-[#A3E635] mb-1 font-medium">+3 this week</span>
           </div>
         </div>
 
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/50 transition-all text-sm font-semibold group"
-        >
-          <SignOut weight="bold" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Log Out
-        </button>
-      </header>
-
-
-      <main className="max-w-6xl mx-auto mt-12">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-8 md:p-12 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl relative overflow-hidden"
-        >
-
-          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
-
-          <h2 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
-            Welcome to your Workspace
-          </h2>
-          <p className="text-muted-foreground mb-10 text-lg max-w-2xl">
-            You successfully logged in! Your secure backend cookies are active, and Zustand successfully retrieved your profile flawlessly across reloads.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-
-            <div className="p-7 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white/90">Current Plan</h3>
-                <Lightning weight="fill" className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-              </div>
-              <p className="text-2xl font-bold text-white capitalize">{user?.plan || 'Free'} Tier</p>
-            </div>
-            
-
-            <div className="p-7 rounded-2xl bg-white/5 border border-white/10 hover:border-green-500/50 transition-colors">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white/90">Account Status</h3>
-              </div>
-              <div className="flex items-center gap-3 text-lg font-bold text-green-400">
-                <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]" />
-                Verified & Active
-              </div>
-            </div>
-
-
-            <div className="p-7 rounded-2xl bg-white/5 border border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white/90">User ID</h3>
-              </div>
-              <p className="text-sm font-mono text-muted-foreground break-all">{user?.id}</p>
-            </div>
-
+        <div className="p-6 rounded-2xl bg-[#111111] border border-white/5">
+          <p className="text-[11px] text-white/40 font-semibold tracking-wider uppercase mb-4">Sessions Completed</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-5xl font-bold text-[#A3E635]">86</h2>
+            <span className="text-sm text-white/40 mb-1">12h total</span>
           </div>
-        </motion.div>
-      </main>
+        </div>
+
+        <div className="p-6 rounded-2xl bg-[#111111] border border-white/5 relative overflow-hidden">
+          <p className="text-[11px] text-white/40 font-semibold tracking-wider uppercase mb-4">Avg Confidence Score</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-5xl font-bold text-[#A3E635]">92%</h2>
+            <TrendUp className="w-6 h-6 text-[#A3E635] mb-2" weight="bold" />
+          </div>
+        </div>
+
+        <div className="p-6 rounded-2xl bg-[#111111] border border-white/5">
+          <p className="text-[11px] text-white/40 font-semibold tracking-wider uppercase mb-4">Avg Knowledge Score</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-5xl font-bold text-[#A3E635]">88%</h2>
+            <span className="text-sm text-white/40 mb-1">Top Tier</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column (2/3) */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Your Interviews Section */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Your Interviews</h3>
+              <button className="text-sm text-[#A3E635] font-medium hover:underline">View All &gt;</button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Card 1 */}
+              <div className="p-6 rounded-2xl bg-[#111111] border border-white/5 flex flex-col">
+                <Briefcase weight="fill" className="w-8 h-8 text-[#A3E635] mb-4" />
+                <h4 className="font-bold text-white text-lg mb-1">Senior Product<br/>Manager</h4>
+                <p className="text-xs text-white/50 mb-6">Experience: 5+ years</p>
+                <div className="flex items-center justify-between text-[11px] text-white/40 mb-6">
+                  <div><span className="text-white">3</span> sessions</div>
+                  <div>Last practiced: 2 days ago</div>
+                </div>
+                <button className="mt-auto w-full py-3 bg-[#A3E635] text-black font-semibold rounded-xl hover:bg-[#94d82d] transition-colors">
+                  Continue
+                </button>
+              </div>
+
+              {/* Card 2 */}
+              <div className="p-6 rounded-2xl bg-[#111111] border border-white/5 flex flex-col">
+                <Code weight="bold" className="w-8 h-8 text-[#A3E635] mb-4" />
+                <h4 className="font-bold text-white text-lg mb-1">Senior Product<br/>Manager</h4>
+                <p className="text-xs text-white/50 mb-6">Experience: 5+ years</p>
+                <div className="flex items-center justify-between text-[11px] text-white/40 mb-6">
+                  <div><span className="text-white">3</span> sessions</div>
+                  <div>Last practiced: 2 days ago</div>
+                </div>
+                <button className="mt-auto w-full py-3 bg-[#A3E635] text-black font-semibold rounded-xl hover:bg-[#94d82d] transition-colors">
+                  Continue
+                </button>
+              </div>
+
+              {/* Card 3 */}
+              <div className="p-6 rounded-2xl bg-[#111111] border border-white/5 flex flex-col">
+                <Brain weight="fill" className="w-8 h-8 text-[#A3E635] mb-4" />
+                <h4 className="font-bold text-white text-lg mb-1">Senior Product<br/>Manager</h4>
+                <p className="text-xs text-white/50 mb-6">Experience: 5+ years</p>
+                <div className="flex items-center justify-between text-[11px] text-white/40 mb-6">
+                  <div><span className="text-white">3</span> sessions</div>
+                  <div>Last practiced: 2 days ago</div>
+                </div>
+                <button className="mt-auto w-full py-3 bg-[#A3E635] text-black font-semibold rounded-xl hover:bg-[#94d82d] transition-colors">
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Master Question Section */}
+          <div className="p-8 rounded-2xl bg-[#111111] border border-white/5 relative overflow-hidden flex items-center justify-between">
+            <div className="relative z-10 max-w-lg">
+              <h3 className="text-xl font-bold text-white mb-3">Master the 'Why Rovoxa?' Question</h3>
+              <p className="text-white/50 text-sm mb-6 leading-relaxed">
+                Our AI detected a slight hesitation when you answer behavioral questions about career alignment. Try the new focus module.
+              </p>
+              <button className="px-6 py-2.5 border border-[#A3E635] text-[#A3E635] font-semibold rounded-lg hover:bg-[#A3E635]/10 transition-colors uppercase text-sm tracking-wider">
+                Start Module
+              </button>
+            </div>
+            <Lightbulb weight="fill" className="absolute -right-6 -bottom-10 w-48 h-48 text-white/[0.02]" />
+          </div>
+
+        </div>
+
+        {/* Right Column (1/3) */}
+        <div className="space-y-8">
+          
+          {/* Recent Activity Section */}
+          <div>
+            <h3 className="text-xl font-bold text-white mb-6">Recent Activity</h3>
+            <div className="space-y-4">
+              
+              <div className="flex items-center gap-4 bg-[#111111] border border-white/5 p-4 rounded-xl">
+                <div className="w-1.5 h-10 bg-[#A3E635] rounded-full"></div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-white text-sm">System Design Interview</h4>
+                  <p className="text-xs text-white/40 mt-1">Yesterday, 4:30 PM</p>
+                </div>
+                <div className="w-12 h-12 rounded-full border border-[#A3E635]/30 flex items-center justify-center text-[#A3E635] font-bold text-sm">
+                  88%
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 bg-[#111111] border border-white/5 p-4 rounded-xl">
+                <div className="w-1.5 h-10 bg-white/20 rounded-full"></div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-white text-sm">System Design Interview</h4>
+                  <p className="text-xs text-white/40 mt-1">Oct 24, 2023</p>
+                </div>
+                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white/60 font-bold text-sm">
+                  76%
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 bg-[#111111] border border-white/5 p-4 rounded-xl">
+                <div className="w-1.5 h-10 bg-[#A3E635] rounded-full"></div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-white text-sm">System Design Interview</h4>
+                  <p className="text-xs text-white/40 mt-1">Oct 22, 2023</p>
+                </div>
+                <div className="w-12 h-12 rounded-full border border-[#A3E635]/30 flex items-center justify-center text-[#A3E635] font-bold text-sm">
+                  91%
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Confidence Trend */}
+          <div className="bg-[#111111] border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+            <h4 className="text-[11px] text-white/40 font-semibold tracking-wider uppercase mb-6">Confidence Trend</h4>
+            
+            <div className="h-40 flex items-end justify-between gap-2 mt-4">
+              <div className="w-1/6 bg-white/10 h-[30%] rounded-t-sm"></div>
+              <div className="w-1/6 bg-white/10 h-[45%] rounded-t-sm"></div>
+              <div className="w-1/6 bg-white/10 h-[60%] rounded-t-sm"></div>
+              <div className="w-1/6 bg-white/10 h-[50%] rounded-t-sm"></div>
+              <div className="w-1/6 bg-[#A3E635] h-[90%] rounded-t-sm relative">
+                <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-[#A3E635] text-black flex items-center justify-center rounded-xl shadow-lg cursor-pointer hover:bg-[#94d82d]">
+                  <span className="text-2xl font-bold">+</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between text-[10px] text-white/30 font-semibold uppercase mt-4 pr-6">
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
     </div>
   );
 }
-
-/**
- * Role: Protected Dashboard Interface
- * What it has: 2 functions
- * What it is doing: The `handleLogout` function clears local Zustand state and sends a logout ping to securely destroy HTTP cookies on the server before redirecting to login. The `DashboardPage` component acts as a protected route shell, evaluating the auth state synchronously and rendering the authenticated user's workspace UI elements (avatar, tier, status) while intercepting unauthorized users.
- * Where it is being used: Mounted at `/dashboard` strictly for authenticated sessions.
- */
