@@ -145,7 +145,8 @@ export const resetUserPassword = async (token, newPassword) => {
 
 /*
 FILE: src/services/auth.service.js
-ROLE: Business logic layer for all authentication operations. Isolates database queries and domain rules from the HTTP controller layer. All functions are pure async operations that either return data or throw descriptive Errors caught by the controller.
+ROLE: Business logic layer for all authentication operations. Isolates database queries and domain rules from the HTTP controller layer.
+ All functions are pure async operations that either return data or throw descriptive Errors caught by the controller.
 
 FUNCTIONS / LOGIC:
   - createUser(name, email, password) — queries User.findOne({ email }) to check for an existing account; throws 'Email already in use' if found. Calls generateVerifyToken() to produce a rawToken (sent to the user) and hashedToken (stored in the DB). Creates the user document via User.create() with emailVerifyToken and a 24-hour emailVerifyExpires. Builds a verification URL using CLIENT_URL and calls sendEmail() with an HTML link. Returns the created user document.

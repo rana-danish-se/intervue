@@ -159,6 +159,7 @@ export default function ResetPasswordPage() {
 /**
  * Role: Password Reset Interface
  * What it has: 2 functions
- * What it is doing: The `onSubmit` function evaluates the submitted passwords and calls `authService.resetPassword` using the URL token to securely update the user's credentials. The `ResetPasswordPage` component renders the interface, manages matching validation state between the two password input fields, and handles UI error feedback.
+ * What it is doing: The `onSubmit` function evaluates the submitted passwords and calls `authService.resetPassword` using the URL token to securely update the user's credentials.
+ *  The `ResetPasswordPage` component renders the interface, manages matching validation state between the two password input fields, and handles UI error feedback.
  * Where it is being used: Mounted by Next.js dynamically at `/auth/reset-password/[token]` when a user clicks a secure email link.
  */

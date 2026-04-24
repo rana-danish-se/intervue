@@ -92,6 +92,7 @@ export default function VerifyEmailPage() {
 /**
  * Role: Email Verification Handler
  * What it has: 2 functions
- * What it is doing: The `verify` async function explicitly calls the backend `verifyEmail` service using the URL token parameters. The `VerifyEmailPage` component manages the animated loading states UI (loading, success, error) and automatically redirects the user to the login screen after a successful database update.
+ * What it is doing: The `verify` async function explicitly calls the backend `verifyEmail` service using the URL token parameters.
+ *  The `VerifyEmailPage` component manages the animated loading states UI (loading, success, error) and automatically redirects the user to the login screen after a successful database update.
  * Where it is being used: Rendered dynamically by Next.js at `/auth/verify/[token]` when a user clicks the verify link sent to their email.
  */
