@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import './configs/passport.js';
 
 import authRoutes from './routes/auth.js';
+import interviewRoutes from './routes/interview.js';
 
 import { notFound, globalErrorHandler } from './middlewares/errorMiddleware.js';
 
@@ -47,6 +48,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/interviews', interviewRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);
