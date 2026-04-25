@@ -2,6 +2,7 @@ import { Syne, Outfit } from "next/font/google";
 import "./globals.css";
 import AuthHydrator from "@/components/auth/AuthHydrator";
 import ProgressBarProvider from "@/components/layout/ProgressBarProvider";
+import Toast from "@/components/ui/Toast";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -31,6 +32,7 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col">
         <ProgressBarProvider>
           <AuthHydrator />
+          <Toast />
           {children}
         </ProgressBarProvider>
       </body>

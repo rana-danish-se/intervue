@@ -10,6 +10,7 @@ import './configs/passport.js';
 
 import authRoutes from './routes/auth.js';
 import interviewRoutes from './routes/interview.js';
+import sessionRoutes from './routes/session.js';
 
 import { notFound, globalErrorHandler } from './middlewares/errorMiddleware.js';
 
@@ -33,13 +34,15 @@ const apiLimiter = rateLimit({
 
 app.use('/api', apiLimiter);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+// Bug #7 fix — cors() must come before body parsers so preflight OPTIONS
+// requests receive CORS headers without unnecessary body parsing.
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true,
 }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use(passport.initialize());
 
@@ -49,6 +52,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/interviews', interviewRoutes);
+app.use('/api/sessions', sessionRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);

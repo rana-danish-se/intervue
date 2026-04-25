@@ -1,12 +1,9 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import Toast from "@/components/ui/Toast";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="relative min-h-screen bg-background flex flex-col selection:bg-primary/30">
-
-      <Toast />
 
       <Navbar />
 

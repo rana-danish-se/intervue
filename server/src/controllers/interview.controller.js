@@ -1,14 +1,12 @@
+import mongoose from 'mongoose';
 import * as interviewService from '../services/interview.service.js';
 import AppError from '../utils/AppError.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
-export const createInterview = asyncHandler(async (req, res, next) => {
-  const { role, experienceLevel, jobDescription, goal, maxQuestions } = req.body;
-  const userId = req.user?._id;
 
-  if (!userId) {
-    return next(new AppError('User ID is required. Please log in.', 401));
-  }
+export const createInterview = asyncHandler(async (req, res, next) => {
+  const { role, experienceLevel, jobDescription, goal, sessionCount } = req.body;
+  const userId = req.user._id;
 
   // Validation
   if (!role || typeof role !== 'string') {
@@ -20,100 +18,116 @@ export const createInterview = asyncHandler(async (req, res, next) => {
   if (role.length > 50) {
     return next(new AppError('Role cannot exceed 50 characters', 400));
   }
-  
+
   if (!experienceLevel) {
     return next(new AppError('Experience level is required', 400));
   }
   const validExperienceLevels = ['junior', 'mid', 'senior'];
   if (!validExperienceLevels.includes(experienceLevel)) {
-     return next(new AppError(`${experienceLevel} is not a valid experience level`, 400));
+    return next(new AppError(`${experienceLevel} is not a valid experience level`, 400));
   }
 
   if (jobDescription && typeof jobDescription === 'string' && jobDescription.length > 500) {
     return next(new AppError('Job description cannot exceed 500 characters', 400));
   }
-  
+
   if (goal && typeof goal === 'string' && goal.length > 200) {
     return next(new AppError('Goal cannot exceed 200 characters', 400));
   }
 
-  if (maxQuestions !== undefined) {
-    const maxQ = Number(maxQuestions);
-    if (isNaN(maxQ) || maxQ < 3 || maxQ > 10) {
-      return next(new AppError('Maximum number of questions must be between 3 and 10', 400));
-    }
+  const parsedSessionCount = sessionCount ? parseInt(sessionCount, 10) : 3;
+  if (isNaN(parsedSessionCount) || parsedSessionCount < 1 || parsedSessionCount > 5) {
+    return next(new AppError('Session count must be a number between 1 and 5', 400));
   }
 
   const interviewData = {
     userId,
     role: role.trim(),
     experienceLevel,
+    sessionCount: parsedSessionCount,
     ...(jobDescription && { jobDescription: jobDescription.trim() }),
     ...(goal && { goal: goal.trim() }),
-    ...(maxQuestions !== undefined && { maxQuestions: Number(maxQuestions) })
   };
 
-  const interview = await interviewService.createInterview(interviewData);
+  const result = await interviewService.createInterview(interviewData);
 
   res.status(201).json({
     success: true,
-    interview
+    interview: result.interview,
+    sessions: result.sessions,
   });
 });
 
-export const getUserInterviews = asyncHandler(async (req, res, next) => {
-  const userId = req.user?._id;
-
-  if (!userId) {
-    return next(new AppError('User ID is required. Please log in.', 401));
-  }
+export const getUserInterviews = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
 
   const interviews = await interviewService.getUserInterviews(userId);
-  
+
   res.status(200).json({
     success: true,
     count: interviews.length,
-    interviews
+    interviews,
+  });
+});
+
+// Bug #5 fix — new GET /:id handler
+export const getInterview = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  // Bug #2 fix — validate ObjectId format before hitting the DB
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(new AppError('Invalid interview ID format', 400));
+  }
+
+  const result = await interviewService.getInterviewById(id, userId);
+
+  res.status(200).json({
+    success: true,
+    interview: result, // result now contains the interview object merged with the sessions array
   });
 });
 
 export const deleteInterview = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const userId = req.user?._id;
+  const userId = req.user._id;
 
-  if (!userId) {
-    return next(new AppError('User ID is required. Please log in.', 401));
+  // Bug #2 fix — validate ObjectId format before hitting the DB
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(new AppError('Invalid interview ID format', 400));
   }
 
-  if (!id) {
-     return next(new AppError('Interview ID is required', 400));
-  }
+  // Bug #1 fix — no inner try/catch; asyncHandler + AppErrors in service handle all errors
+  // Bug #3 fix — service throws AppError directly, so no string-matching needed
+  await interviewService.deleteInterviewById(id, userId);
 
-  try {
-    await interviewService.deleteInterviewById(id, userId);
-    res.status(200).json({
-      success: true,
-      message: 'Interview deleted successfully'
-    });
-  } catch (error) {
-    if (error.message === 'Interview not found') {
-      return next(new AppError(error.message, 404));
-    }
-    if (error.message === 'Not authorized to delete this interview') {
-      return next(new AppError(error.message, 403));
-    }
-    return next(new AppError(error.message, 500));
-  }
+  res.status(200).json({
+    success: true,
+    message: 'Interview deleted successfully',
+  });
 });
+
+
 /*
 FILE: src/controllers/interview.controller.js
-ROLE: HTTP layer for all interview-related endpoints. Reads from req.body, req.params, and req.user, delegates business logic and database operations to interviewService, and sends structured JSON responses. All handlers are wrapped in asyncHandler to forward unexpected errors to the global error middleware. Validation and AppError construction live here; database queries and domain rules live in the service.
+ROLE: HTTP layer for all interview-related endpoints. Reads from req.body, req.params, and
+req.user, delegates business logic and database operations to interviewService, and sends
+structured JSON responses. All handlers are wrapped in asyncHandler to forward unexpected
+errors to the global error middleware. Validation lives here; DB queries and domain rules
+live in the service.
 
 FUNCTIONS / LOGIC:
-  - createInterview — destructures role, experienceLevel, jobDescription, goal, and maxQuestions from req.body and extracts userId from req.user._id. Returns 401 via AppError if userId is absent. Validates role (required, must be a non-empty string, max 50 characters), experienceLevel (required, must be one of 'junior' | 'mid' | 'senior'), jobDescription (optional, max 500 characters if provided), goal (optional, max 200 characters if provided), and maxQuestions (optional, must be a number between 3 and 10 if provided). Assembles a clean interviewData object using spread conditionals so optional fields are only included when truthy. Calls interviewService.createInterview(interviewData) and returns 201 with { success: true, interview }.
-  - getUserInterviews — extracts userId from req.user._id. Returns 401 via AppError if userId is absent. Calls interviewService.getUserInterviews(userId) and returns 200 with { success: true, count: interviews.length, interviews }. An empty array is a valid response and is not treated as an error.
-  - deleteInterview — extracts id from req.params and userId from req.user._id. Returns 401 via AppError if userId is absent, 400 if id is missing. Calls interviewService.deleteInterviewById(id, userId) inside a try/catch to intercept known service errors — maps 'Interview not found' to AppError 404 and 'Not authorized to delete this interview' to AppError 403. Any other unexpected error is forwarded as AppError 500. On success returns 200 with { success: true, message: 'Interview deleted successfully' }.
+  - createInterview — validates and assembles interviewData from req.body, calls
+    interviewService.createInterview(interviewData), returns 201 with the created document.
+  - getUserInterviews — calls interviewService.getUserInterviews(userId), returns 200 with
+    count and interviews array. An empty array is valid and not treated as an error.
+  - getInterview — validates ObjectId format, calls interviewService.getInterviewById(id, userId),
+    returns 200 with the interview document. Service throws AppError 404/403 if not found or
+    not owned.
+  - deleteInterview — validates ObjectId format, calls interviewService.deleteInterviewById(id, userId).
+    Service throws AppError 404/403 directly; asyncHandler forwards any other unexpected error.
+    Returns 200 on success.
 
 IMPORTED BY:
-  - src/routes/interview.routes.js — imports { createInterview, getUserInterviews, deleteInterview } and binds them to POST /, GET /, and DELETE /:id respectively.
+  - src/routes/interview.js — imports all four named exports.
 */

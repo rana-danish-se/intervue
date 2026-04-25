@@ -31,14 +31,24 @@ const interviewSchema = new mongoose.Schema({
     maxlength: [200, 'Goal cannot exceed 200 characters'],
     trim: true,
   },
-  maxQuestions: {
+  sessionCount: {
     type: Number,
-    min: [3, 'Minimum number of questions is 3'],
-    max: [10, 'Maximum number of questions is 10'],
-    default: 5,
+    min: [1, 'At least 1 session is required'],
+    max: [5, 'Maximum 5 sessions allowed'],
+    default: 3,
   },
+  status: {
+    type: String,
+    enum: ['draft', 'in-progress', 'completed'],
+    default: 'draft',
+  },
+  finalVerdict: {
+    improvementAreas: [{ type: String }],
+    tips: [{ type: String }],
+    hiringProbability: { type: Number, min: 0, max: 100, default: null }
+  }
 }, {
-  timestamps: true, // Automatically adds createdAt and updatedAt
+  timestamps: true,
 });
 
 export default mongoose.model('Interview', interviewSchema);

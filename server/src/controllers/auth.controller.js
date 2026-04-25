@@ -197,6 +197,7 @@ export const getMe = asyncHandler(async (req, res, next) => {
   res.status(200).json({ user: req.user });
 });
 
+
 /*
 FILE: src/controllers/auth.controller.js
 ROLE: HTTP request/response layer for all authentication operations. Receives validated requests from the router, delegates business logic to authService, and sends structured cookie-based token responses or JSON back to the client. All exported handlers are wrapped in asyncHandler so unhandled promise rejections are automatically forwarded to the global error handler.
