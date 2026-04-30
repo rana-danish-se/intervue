@@ -221,6 +221,74 @@ export const completeSession = asyncHandler(async (req, res, next) => {
   });
 });
 
+// Bulk evaluation endpoint: evaluate all provided answers in one go
+export const evaluateSession = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { answers } = req.body; // [{ questionId, answerText }]
+  const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(new AppError('Invalid session ID format', 400));
+  }
+
+  const session = await Session.findById(id);
+  if (!session) return next(new AppError('Session not found', 404));
+
+  const interview = await Interview.findById(session.interviewId);
+  if (!interview) return next(new AppError('Associated interview not found', 404));
+  if (interview.userId.toString() !== userId.toString()) {
+    return next(new AppError('Not authorized', 403));
+  }
+
+  // Build per-question evaluation results
+  const perQuestion = [];
+  let scoresSum = 0;
+  let count = 0;
+
+  for (const a of (answers || [])) {
+    const q = session.questions.find((qq) => String(qq._id) === String(a.questionId));
+    if (!q) continue;
+    const evalRes = await llmService.evaluateAnswer({
+      role: interview.role,
+      experienceLevel: interview.experienceLevel,
+      question: q.questionText,
+      answer: a.answerText
+    });
+    const s = evalRes?.scores || {};
+    const item = {
+      questionId: String(q._id),
+      questionText: q.questionText,
+      answerText: a.answerText,
+      evaluation: evalRes,
+      score: s.score ?? 0,
+      confidence: s.confidence ?? 0
+    };
+    perQuestion.push(item);
+    scoresSum += (s.score ?? 0);
+    count += 1;
+  }
+
+  const finalScore = count > 0 ? Math.round((scoresSum / count) * 10) / 10 : 0;
+  const report = {
+    perQuestion,
+    score: finalScore,
+    summary: `Bulk evaluation completed. Final score: ${finalScore}.`,
+    feedback: perQuestion.length
+      ? 'Overall performance assessed across all questions.'
+      : 'No answers evaluated.'
+  };
+
+  session.status = 'completed';
+  session.report = report;
+  // Persist raw answers if desired
+  if (answers && answers.length > 0) {
+    session.answers = answers;
+  }
+  await session.save();
+
+  res.status(200).json({ success: true, sessionId: id, report });
+});
+
 /*
 FILE: src/controllers/session.controller.js
 ROLE: HTTP handlers for session-specific actions.

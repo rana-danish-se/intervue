@@ -154,14 +154,14 @@ export default function SessionHistory({ interviewId, sessions: initialSessions 
                     
                     {isPending ? (
                       <Link
-                        href={`/dashboard/interviews/${interviewId}/session/${session._id}`}
+                        href={`/dashboard/sessions/${session._id}`}
                         className="text-[11px] font-bold px-3 py-1.5 bg-[#A3E635] text-black hover:bg-[#94d82d] rounded flex items-center gap-1 transition-colors"
                       >
                         <Play weight="fill" className="w-3 h-3" /> Start
                       </Link>
                     ) : (
                       <Link 
-                        href={`/dashboard/interviews/${interviewId}/session/${session._id}`}
+                        href={`/dashboard/sessions/${session._id}`}
                         className="text-[11px] font-semibold text-white/50 hover:text-white transition-colors flex items-center gap-1"
                       >
                         View <CaretRight className="w-3 h-3" />
