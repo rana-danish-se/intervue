@@ -39,7 +39,11 @@ router.get('/:id', async (req, res, next) => {
     res.status(200).json({ 
       id: session._id, 
       title: session.title, 
-      status: session.status, 
+      status: session.status,
+      focus: session.focus || 'General Expertise',
+      order: session.order,
+      sessionCount: interview.sessionCount,
+      role: interview.role,
       questions: (session.questions || []).map(q => ({ id: q._id, text: q.questionText })) 
     });
   } catch (err) {
