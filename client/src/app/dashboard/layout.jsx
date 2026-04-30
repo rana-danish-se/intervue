@@ -3,12 +3,13 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
 import { useAuthStore } from "@/store/authStore";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { CircleNotch } from "@phosphor-icons/react";
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, isLoading } = useAuthStore();
 
   useEffect(() => {
@@ -23,6 +24,12 @@ export default function DashboardLayout({ children }) {
         <CircleNotch weight="bold" className="w-12 h-12 text-[#A3E635] animate-spin" />
       </div>
     );
+  }
+
+  const isInterviewRoom = pathname?.includes("/room");
+
+  if (isInterviewRoom) {
+    return <div className="h-screen bg-[#080808]">{children}</div>;
   }
 
   return (

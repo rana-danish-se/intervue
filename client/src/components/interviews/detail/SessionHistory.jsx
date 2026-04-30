@@ -144,7 +144,11 @@ export default function SessionHistory({ interviewId, sessions: initialSessions 
                   </div>
                   <div className="col-span-2 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-[13px] font-medium text-white/80 capitalize">
-                      <span className={`w-1.5 h-1.5 rounded-full ${isPending ? 'bg-orange-400' : 'bg-[#A3E635]'}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        isPending ? 'bg-orange-400' : 
+                        session.status === 'abandoned' ? 'bg-red-400' : 
+                        session.status === 'completed' ? 'bg-[#A3E635]' : 'bg-blue-400'
+                      }`}></span>
                       {session.status}
                     </div>
                     
@@ -157,7 +161,7 @@ export default function SessionHistory({ interviewId, sessions: initialSessions 
                       </Link>
                     ) : (
                       <Link 
-                        href={`/dashboard/interviews/${interviewId}/session/${session._id}/report`}
+                        href={`/dashboard/interviews/${interviewId}/session/${session._id}`}
                         className="text-[11px] font-semibold text-white/50 hover:text-white transition-colors flex items-center gap-1"
                       >
                         View <CaretRight className="w-3 h-3" />

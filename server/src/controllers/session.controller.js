@@ -28,12 +28,14 @@ export const generateQuestions = asyncHandler(async (req, res, next) => {
     return next(new AppError('Not authorized to access this session', 403));
   }
 
-  // If questions already exist, no need to generate
+  // If questions already exist, return them directly so the room can start
   if (session.questions && session.questions.length > 0) {
+    session.status = 'in-progress';
+    await session.save();
     return res.status(200).json({
       success: true,
       message: 'Questions already generated',
-      questionCount: session.questions.length,
+      questions: session.questions.map(q => ({ _id: q._id, questionText: q.questionText }))
     });
   }
 
@@ -42,18 +44,19 @@ export const generateQuestions = asyncHandler(async (req, res, next) => {
     interview.role,
     interview.experienceLevel,
     session.focus || 'General Domain Knowledge',
-    5 // generate exactly 5 questions
+    5
   );
 
-  // Update session
+  // Update session & mark as in-progress
   session.questions = generatedQuestions;
+  session.status = 'in-progress';
   await session.save();
 
   res.status(200).json({
     success: true,
     message: 'Questions successfully generated',
-    questionCount: session.questions.length,
-    // CRITICAL: We do NOT return the question text payload to ensure the frontend cannot leak it
+    // Return question text so the room can display them in sequence
+    questions: session.questions.map(q => ({ _id: q._id, questionText: q.questionText }))
   });
 });
 
@@ -127,6 +130,94 @@ export const reorderSessions = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: 'Sessions reordered successfully'
+  });
+});
+
+export const abandonSession = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  const session = await Session.findById(id);
+  if (!session) return next(new AppError('Session not found', 404));
+
+  const interview = await Interview.findById(session.interviewId);
+  if (interview.userId.toString() !== userId.toString()) {
+    return next(new AppError('Not authorized', 403));
+  }
+
+  session.status = 'abandoned';
+  await session.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Session marked as abandoned'
+  });
+});
+
+export const completeSession = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { answers } = req.body; // [{ questionId, answerText }]
+  const userId = req.user._id;
+
+  const session = await Session.findById(id);
+  if (!session) return next(new AppError('Session not found', 404));
+
+  const interview = await Interview.findById(session.interviewId);
+  if (interview.userId.toString() !== userId.toString()) {
+    return next(new AppError('Not authorized', 403));
+  }
+
+  // Save all answers initially
+  if (answers && answers.length > 0) {
+    answers.forEach(({ questionId, answerText }) => {
+      const question = session.questions.id(questionId);
+      if (question) question.userResponseText = answerText;
+    });
+  }
+
+  // Set status to processing so client shows loading
+  session.status = 'processing';
+  await session.save();
+
+  // Process evaluations in the background
+  (async () => {
+    try {
+      // For each question, get feedback
+      for (const question of session.questions) {
+        if (!question.userResponseText) continue;
+
+        const evaluation = await llmService.evaluateAnswer({
+          role: interview.role,
+          experienceLevel: interview.experienceLevel,
+          question: question.questionText,
+          answer: question.userResponseText
+        });
+        
+        // Map evaluation to schema fields
+        question.stats = {
+          confidence: evaluation.scores?.confidence || 0,
+          knowledgeLevel: evaluation.scores?.knowledge || 0,
+          relevance: evaluation.scores?.relevance || 0,
+          fluency: evaluation.scores?.fluency || 0,
+          clarity: evaluation.scores?.clarity || 0,
+        };
+        question.feedback = evaluation.feedback || "No feedback provided.";
+      }
+
+      session.status = 'completed';
+      await session.save();
+    } catch (err) {
+      console.error('Background report generation failed:', err);
+      // Even if it fails, mark as completed so the user isn't stuck forever,
+      // or we could add a 'failed' status, but for now fallback to completed.
+      session.status = 'completed';
+      await session.save();
+    }
+  })();
+
+  res.status(200).json({
+    success: true,
+    message: 'Session is being evaluated'
   });
 });
 

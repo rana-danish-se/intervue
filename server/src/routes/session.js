@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateQuestions, createCustomSession, reorderSessions } from '../controllers/session.controller.js';
+import { generateQuestions, createCustomSession, reorderSessions, abandonSession, completeSession } from '../controllers/session.controller.js';
 import { protectRoute } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -9,6 +9,8 @@ router.use(protectRoute);
 router.post('/', createCustomSession);
 router.put('/reorder', reorderSessions);
 router.post('/:id/generate-questions', generateQuestions);
+router.patch('/:id/abandon', abandonSession);
+router.post('/:id/complete', completeSession);
 
 export default router;
 

@@ -48,6 +48,48 @@ Structure the JSON exactly like this:
 ]
 `;
 
+export const evaluateAnswerPrompt = (role, experienceLevel, question, answer) => `
+You are an expert interviewer. Evaluate the candidate's answer to the following question:
+
+Role: ${role}
+Level: ${experienceLevel}
+Question: ${question}
+Candidate's Answer: ${answer}
+
+Provide a constructive evaluation. 
+Return a JSON object with:
+- scores: { confidence (0-100), knowledge (0-100), relevance (0-100), fluency (0-100), clarity (0-100) }
+- feedback: A brief (1-2 sentences) feedback string.
+
+Example:
+{
+  "scores": { "confidence": 80, "knowledge": 75, "relevance": 90, "fluency": 85, "clarity": 80 },
+  "feedback": "Good use of examples, but try to be more concise in explaining the technical details."
+}
+`;
+
+export const generateSessionReportPrompt = (sessionTitle, questions) => `
+You are an expert career coach. Analyze the following interview session results and provide a final summary report.
+
+Session: ${sessionTitle}
+Questions & Answers:
+${questions.map((q, i) => `Q${i+1}: ${q.questionText}\nA${i+1}: ${q.userResponseText}\nFeedback: ${q.feedback}`).join('\n\n')}
+
+Return a JSON object with:
+- overallScore: (0-100)
+- summary: A 2-3 sentence summary of performance.
+- strengths: [list of 3 strings]
+- improvements: [list of 3 strings]
+
+Example:
+{
+  "overallScore": 78,
+  "summary": "The candidate showed strong domain knowledge but struggled with situational behavior questions.",
+  "strengths": ["Technical accuracy", "Confidence", "Problem-solving"],
+  "improvements": ["Communication clarity", "Time management", "Specific examples"]
+}
+`;
+
 /*
 FILE: src/utils/prompts.js
 ROLE: Centralized file for storing all AI prompt templates used across the application.

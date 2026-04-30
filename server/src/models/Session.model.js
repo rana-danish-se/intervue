@@ -23,7 +23,7 @@ const sessionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'in-progress', 'completed','abandoned'],
+    enum: ['pending', 'in-progress', 'processing', 'completed','abandoned'],
     default: 'pending',
   },
   questions: [questionSchema]
