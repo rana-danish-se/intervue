@@ -27,6 +27,10 @@ const questionSchema = new mongoose.Schema({
   feedback: {
     type: String,
     default: null,
+  },
+  strongerAnswerSuggestion: {
+    type: String,
+    default: null,
   }
 });
 

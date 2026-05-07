@@ -1,3 +1,10 @@
+/*
+Role: Realtime interview socket workflow handler.
+What it does: Handles join/start/submit-answer events and emits question progression + completion signals to clients.
+Where used: Invoked by socket manager for each authenticated connection.
+Why it exists: Encapsulates socket event contracts separately from HTTP controllers.
+*/
+
 import Session from '../models/Session.model.js';
 import Interview from '../models/Interview.model.js';
 import { evaluateAnswer, generateSessionReport } from '../services/llm.service.js';
@@ -112,11 +119,3 @@ export const handleInterviewSocket = (io, socket) => {
     }
   });
 };
-
-/*
-FILE: src/sockets/interviewHandler.js
-ROLE: Handles real-time interview flow logic including joining rooms, 
-      advancing questions, and triggering LLM evaluations.
-IMPORTED BY:
-  - src/sockets/socketManager.js
-*/

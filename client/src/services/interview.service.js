@@ -1,3 +1,10 @@
+/*
+Role: Interview API client service.
+What it does: Encapsulates `/interviews` and dashboard-summary requests for list/detail/create/delete flows.
+Where used: Consumed by interview/dashboard hooks and pages.
+Why it exists: Provides a single source of frontend-backend contract definitions for interview resources.
+*/
+
 import axiosInstance from '../lib/axiosInstance';
 
 export const interviewService = {
@@ -7,6 +14,10 @@ export const interviewService = {
    */
   getInterviews: async () => {
     const response = await axiosInstance.get('/interviews');
+    return response.data;
+  },
+  getDashboardSummary: async () => {
+    const response = await axiosInstance.get('/interviews/dashboard/summary');
     return response.data;
   },
 
@@ -38,12 +49,3 @@ export const interviewService = {
   },
 };
 
-/**
- * Role: Interview API Service Layer
- * What it has: Thin wrappers over axiosInstance for all /interviews endpoints.
- *   - getInterviews: fetch all interviews belonging to the logged-in user
- *   - getInterview: fetch a single interview by ID
- *   - createInterview: POST a new interview document
- *   - deleteInterview: DELETE an interview by ID
- * Where it is being used: Imported by hooks/useInterviews.js.
- */

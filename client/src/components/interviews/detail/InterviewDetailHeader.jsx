@@ -8,9 +8,18 @@ const LEVEL_LABELS = {
 };
 
 export default function InterviewDetailHeader({ interview }) {
-  const { _id, role, experienceLevel } = interview || {};
+  const { _id, role, experienceLevel, sessions = [] } = interview || {};
   
   const levelLabel = LEVEL_LABELS[experienceLevel] || experienceLevel?.toUpperCase() || "UNKNOWN";
+  const completedSessions = sessions.filter((session) => session.status === "completed").length;
+  const lastPracticedAt =
+    sessions.length > 0
+      ? sessions.reduce(
+          (latest, session) =>
+            new Date(session.updatedAt) > new Date(latest) ? session.updatedAt : latest,
+          sessions[0].updatedAt
+        )
+      : null;
 
   return (
     <div className="bg-[#111111] border border-white/5 rounded-2xl p-8 mb-8 relative flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -38,11 +47,11 @@ export default function InterviewDetailHeader({ interview }) {
         <div className="flex items-center gap-6 text-sm text-white/50">
           <div className="flex items-center gap-2">
             <CalendarBlank className="w-5 h-5 text-white/30" />
-            0 sessions completed
+            {completedSessions} sessions completed
           </div>
           <div className="flex items-center gap-2">
             <ClockCounterClockwise className="w-5 h-5 text-white/30" />
-            Not practiced yet
+            {lastPracticedAt ? `Last practiced ${new Date(lastPracticedAt).toLocaleDateString()}` : "Not practiced yet"}
           </div>
           <div className="flex items-center gap-2">
             <Question className="w-5 h-5 text-white/30" />

@@ -1,20 +1,25 @@
 "use client";
 
 import { CheckCircle, Brain, Target, Lightning, SpeakerHigh } from "@phosphor-icons/react";
+import { scoreFromStats, averageScoreFromQuestions } from "@/lib/metrics/sessionMetrics";
 
-export default function CompletedSessionReport({ session }) {
-  // Extract questions or generate mock stats if none exist
-  const questions = session.questions || [];
+export default function CompletedSessionReport({ session, report }) {
+  // Support either session-driven data or a report payload from the backend
+  const questionsFromSession = session?.questions || [];
+  const questionsFromReport = (report?.perQuestion || []) .map((rq, idx) => {
+    return {
+      _id: rq.questionId || idx,
+      questionText: rq.questionText || rq.question || '',
+      userResponseText: rq.answerText || rq.userResponseText || '',
+      feedback: rq.feedback || '',
+      stats: rq.stats || {},
+    };
+  });
+  const questions = questionsFromReport.length > 0 ? questionsFromReport : questionsFromSession;
   
   // Calculate some basic stats
   const totalQuestions = questions.length;
-  
-  const calculateQuestionScore = (stats) => {
-    if (!stats) return 80;
-    return (stats.confidence + stats.knowledgeLevel + stats.relevance + stats.fluency + stats.clarity) / 5;
-  };
-
-  const averageScore = questions.reduce((acc, q) => acc + calculateQuestionScore(q.stats), 0) / (totalQuestions || 1);
+  const averageScore = averageScoreFromQuestions(questions) ?? 0;
   const isExcellent = averageScore >= 80;
 
   return (
@@ -94,7 +99,7 @@ export default function CompletedSessionReport({ session }) {
                           <span className="text-xs font-bold text-[#A3E635] uppercase tracking-wider">AI Evaluation</span>
                         </div>
                         <span className="text-xs font-bold bg-[#A3E635]/20 text-[#A3E635] px-2 py-1 rounded">
-                          Score: {Math.round(calculateQuestionScore(q.stats))}/100
+                          Score: {scoreFromStats(q.stats) ?? 0}/100
                         </span>
                       </div>
                       

@@ -1,3 +1,10 @@
+/*
+Role: Root Next.js application layout.
+What it does: Applies global fonts/styles and mounts cross-app providers (auth hydration, progress bar, toast) around all routes.
+Where used: Automatically wrapped around every page in the App Router.
+Why it exists: Centralizes app-wide UI/runtime scaffolding in one stable entrypoint.
+*/
+
 import { Syne, Outfit } from "next/font/google";
 import "./globals.css";
 import AuthHydrator from "@/components/auth/AuthHydrator";
@@ -39,10 +46,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-
-/**
- * Role: Root App Layout
- * What it has: 1 function
- * What it is doing: The `RootLayout` function wraps the entire application logic. It initializes custom Google Fonts (Syne and Outfit), injects global CSS, and encompasses the children within the global `ProgressBarProvider` and `AuthHydrator` context.
- * Where it is being used: Next.js automatically invokes this at the root level (`/`) to structure the main DOM and HTML skeleton.
- */

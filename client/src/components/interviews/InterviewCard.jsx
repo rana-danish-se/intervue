@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Play, Eye, DotsThreeVertical, BriefcaseMetal, Target, Trash } from "@phosphor-icons/react";
+import {
+  Play,
+  Eye,
+  DotsThreeVertical,
+  CalendarBlank,
+  ClockCounterClockwise,
+  Trash,
+} from "@phosphor-icons/react";
 
 // Map backend experienceLevel values to display labels
 const LEVEL_LABELS = {
@@ -26,10 +33,23 @@ function formatRelativeDate(isoString) {
 }
 
 export default function InterviewCard({ interview, onDelete }) {
-  const { _id, role, experienceLevel, jobDescription, goal, createdAt } = interview;
+  const {
+    _id,
+    role,
+    experienceLevel,
+    createdAt,
+    totalSessions = 0,
+    averageScore = null,
+    lastPracticedAt,
+    nextSessionId,
+  } = interview;
   const levelLabel = LEVEL_LABELS[experienceLevel] ?? experienceLevel.toUpperCase();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const normalizedScore = typeof averageScore === "number" ? Math.max(0, Math.min(100, averageScore)) : null;
+  const circumference = 2 * Math.PI * 28;
+  const progressOffset =
+    normalizedScore === null ? circumference : circumference - (normalizedScore / 100) * circumference;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -81,23 +101,43 @@ export default function InterviewCard({ interview, onDelete }) {
         {/* Role title */}
         <h3 className="text-xl font-bold text-white mb-4">{role}</h3>
 
-        {/* Optional fields */}
-        <div className="space-y-2 text-sm text-white/50">
-          {jobDescription && (
-            <p className="flex items-start gap-2 leading-relaxed">
-              <BriefcaseMetal className="w-4 h-4 mt-0.5 text-white/30 flex-shrink-0" />
-              <span className="line-clamp-2">{jobDescription}</span>
+        {/* Practice metrics */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2 text-sm text-white/50">
+            <p className="flex items-center gap-2 leading-relaxed">
+              <ClockCounterClockwise className="w-4 h-4 text-white/30 flex-shrink-0" />
+              <span>Total Sessions: {totalSessions}</span>
             </p>
-          )}
-          {goal && (
-            <p className="flex items-start gap-2 leading-relaxed">
-              <Target className="w-4 h-4 mt-0.5 text-white/30 flex-shrink-0" />
-              <span className="line-clamp-1">{goal}</span>
+            <p className="flex items-center gap-2 leading-relaxed">
+              <CalendarBlank className="w-4 h-4 text-white/30 flex-shrink-0" />
+              <span>
+                Last practiced: {lastPracticedAt ? formatRelativeDate(lastPracticedAt) : "Not practiced yet"}
+              </span>
             </p>
-          )}
-          {!jobDescription && !goal && (
-            <p className="text-white/30 text-xs italic">No description provided</p>
-          )}
+          </div>
+
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90">
+              <circle cx="40" cy="40" r="28" stroke="rgba(255,255,255,0.15)" strokeWidth="6" fill="none" />
+              <circle
+                cx="40"
+                cy="40"
+                r="28"
+                stroke="#A3E635"
+                strokeWidth="6"
+                strokeLinecap="round"
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={progressOffset}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-white font-bold text-lg leading-none">
+                {normalizedScore === null ? "--" : `${normalizedScore}%`}
+              </span>
+              <span className="text-[9px] uppercase tracking-wide text-white/40">Avg Score</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -109,7 +149,7 @@ export default function InterviewCard({ interview, onDelete }) {
       {/* Actions */}
       <div className="flex items-center gap-3">
         <Link
-          href={`/interview/${_id}`}
+          href={nextSessionId ? `/dashboard/sessions/${nextSessionId}` : `/dashboard/interviews/${_id}`}
           className="flex-1 py-3 bg-[#A3E635] text-black font-semibold rounded-xl hover:bg-[#94d82d] transition-colors flex items-center justify-center gap-2 text-sm"
         >
           <Play weight="fill" className="w-4 h-4" />

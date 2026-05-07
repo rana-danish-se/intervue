@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useInterviews } from "@/hooks/useInterviews";
 import { useInterviewStore } from "@/store/interviewStore";
 import { useToastStore } from "@/store/toastStore";
@@ -16,18 +16,19 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 
 // ─── Filter helpers ────────────────────────────────────────────────────────────
 
-const LEVEL_ROLES = {
-  JUNIOR: "junior",
-  MID: "mid",
-  SENIOR: "senior",
-};
-
 function applyFilters(interviews, activeStatus, roleFilter) {
-  // Status filter is placeholder until sessions data exists
-  let result = [...interviews];
-  if (roleFilter && roleFilter !== "all") {
-    result = result.filter((i) => i.experienceLevel === roleFilter);
+  let result = [...(interviews || [])];
+
+  if (activeStatus === "ACTIVE") {
+    result = result.filter((i) => i.progressStatus === "active");
+  } else if (activeStatus === "COMPLETED") {
+    result = result.filter((i) => i.progressStatus === "completed");
   }
+
+  if (roleFilter && roleFilter !== "all") {
+    result = result.filter((i) => i.role === roleFilter);
+  }
+
   return result;
 }
 
@@ -35,7 +36,7 @@ function applyFilters(interviews, activeStatus, roleFilter) {
 
 export default function MyInterviews() {
   const [activeStatus, setActiveStatus] = useState("ALL");
-  const [roleFilter] = useState("all"); // expandable once role-select dropdown is wired
+  const [roleFilter, setRoleFilter] = useState("all");
   const [deletingId, setDeletingId] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
 
@@ -68,6 +69,9 @@ export default function MyInterviews() {
 
   // ── Derived state ───────────────────────────────────────────────────────────
   const filtered = applyFilters(interviews, activeStatus, roleFilter);
+  const roleOptions = useMemo(() => {
+    return [...new Set((interviews || []).map((interview) => interview.role).filter(Boolean))].sort();
+  }, [interviews]);
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -77,6 +81,9 @@ export default function MyInterviews() {
       <InterviewsFilters
         activeStatus={activeStatus}
         onStatusChange={setActiveStatus}
+        roleFilter={roleFilter}
+        onRoleFilterChange={setRoleFilter}
+        roleOptions={roleOptions}
       />
 
       {/* Error banner */}

@@ -4,6 +4,7 @@ import {
   getUserInterviews,
   getInterview,
   deleteInterview,
+  getDashboardSummary,
 } from '../controllers/interview.controller.js';
 import { protectRoute } from '../middlewares/authMiddleware.js';
 
@@ -13,6 +14,7 @@ router.use(protectRoute);
 
 router.post('/', createInterview);
 router.get('/', getUserInterviews);
+router.get('/dashboard/summary', getDashboardSummary);
 router.get('/:id', getInterview);       // Bug #5 fix — fetch single interview
 router.delete('/:id', deleteInterview);
 

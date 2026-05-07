@@ -1,3 +1,10 @@
+/*
+Role: Interview HTTP controller layer.
+What it does: Validates request payloads/params and delegates interview-domain operations to service methods.
+Where used: Wired by interview routes under `/api/interviews`.
+Why it exists: Keeps transport concerns separate from persistence and business logic.
+*/
+
 import mongoose from 'mongoose';
 import * as interviewService from '../services/interview.service.js';
 import AppError from '../utils/AppError.js';
@@ -67,6 +74,15 @@ export const getUserInterviews = asyncHandler(async (req, res) => {
     success: true,
     count: interviews.length,
     interviews,
+  });
+});
+
+export const getDashboardSummary = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const summary = await interviewService.getDashboardSummary(userId);
+  res.status(200).json({
+    success: true,
+    ...summary,
   });
 });
 

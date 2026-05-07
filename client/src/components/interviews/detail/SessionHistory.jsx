@@ -69,7 +69,7 @@ export default function SessionHistory({ interviewId, sessions: initialSessions 
           <Brain className="w-12 h-12 text-white/20 mb-4" />
           <h3 className="text-lg font-bold text-white mb-2">No Sessions Found</h3>
           <p className="text-white/50 text-sm mb-6 max-w-sm">
-            It looks like we couldn't generate sessions for this interview, or they were deleted.
+            It looks like we could not generate sessions for this interview, or they were deleted.
           </p>
           <button 
             onClick={() => setIsModalOpen(true)}
@@ -115,6 +115,7 @@ export default function SessionHistory({ interviewId, sessions: initialSessions 
         <Reorder.Group axis="y" values={sessions} onReorder={handleReorder} className="flex flex-col">
           {sessions.map((session, i) => {
             const isPending = session.status === 'pending';
+            const isInProgress = session.status === 'in-progress';
             
             return (
               <Reorder.Item 
@@ -158,6 +159,13 @@ export default function SessionHistory({ interviewId, sessions: initialSessions 
                         className="text-[11px] font-bold px-3 py-1.5 bg-[#A3E635] text-black hover:bg-[#94d82d] rounded flex items-center gap-1 transition-colors"
                       >
                         <Play weight="fill" className="w-3 h-3" /> Start
+                      </Link>
+                    ) : isInProgress ? (
+                      <Link
+                        href={`/dashboard/sessions/${session._id}`}
+                        className="text-[11px] font-bold px-3 py-1.5 bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 rounded flex items-center gap-1 transition-colors"
+                      >
+                        Continue <CaretRight className="w-3 h-3" />
                       </Link>
                     ) : (
                       <Link 

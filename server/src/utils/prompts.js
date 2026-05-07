@@ -27,66 +27,86 @@ Structure the JSON exactly like this:
 ]
 `;
 
-export const generateSessionQuestionsPrompt = (role, experienceLevel, focus, questionCount = 5) => `
-You are an expert interviewer and recruiter.
-You are conducting a mock interview session for a candidate. 
+export const generateSessionQuestionsPrompt = (
+  role,
+  experienceLevel,
+  focus,
+  questionCount = 5,
+  difficulty = "medium",
+  interviewerPersona = "neutral"
+) => `
+You are an interview question generator.
+Return only valid JSON.
 
-Role/Field: ${role}
-Experience Level: ${experienceLevel}
-Session Focus Area: ${focus}
+Context:
+- role: ${role}
+- level: ${experienceLevel}
+- focus: ${focus}
+- difficulty: ${difficulty}
+- interviewer_persona: ${interviewerPersona}
 
-CRITICAL INSTRUCTION: Adapt your questions to the NATURAL SETTING of the specified Role/Field. If this is a non-technical role (e.g., Marketing, Nursing, Sales, Design, Management), do NOT ask software engineering questions. Use scenarios, terminology, and fundamentals specific to THAT industry.
+Rules:
+- Produce exactly ${questionCount} questions.
+- Keep questions role-correct for the target domain (never default to software for non-software roles).
+- Difficulty mapping:
+  - easy: foundational and direct
+  - medium: practical and scenario-based
+  - hard: ambiguous, high-pressure, depth-oriented
+- Persona tone:
+  - friendly: supportive and warm phrasing
+  - neutral: professional and balanced phrasing
+  - tough: direct, challenging, pressure-focused phrasing
+- Avoid duplicate or near-duplicate questions.
 
-Generate exactly ${questionCount} questions for this specific session. The questions should progressively get more difficult.
-You must return ONLY a valid JSON array of question objects. Do NOT wrap it in markdown code blocks (\`\`\`json). Just the raw array.
-
-Structure the JSON exactly like this:
+Output schema (strict):
 [
-  {
-    "questionText": "Can you tell me about a time you had to resolve a conflict with a coworker?"
-  }
+  { "questionText": "..." }
 ]
 `;
 
 export const evaluateAnswerPrompt = (role, experienceLevel, question, answer) => `
-You are an expert interviewer. Evaluate the candidate's answer to the following question:
+You are an interview evaluator. Return only valid JSON.
+Evaluate the answer with calibrated strictness for role=${role}, level=${experienceLevel}.
 
-Role: ${role}
-Level: ${experienceLevel}
-Question: ${question}
-Candidate's Answer: ${answer}
+question: ${question}
+answer: ${answer}
 
-Provide a constructive evaluation. 
-Return a JSON object with:
-- scores: { confidence (0-100), knowledge (0-100), relevance (0-100), fluency (0-100), clarity (0-100) }
-- feedback: A brief (1-2 sentences) feedback string.
+Scoring rubric:
+- confidence: delivery assurance and conviction
+- knowledge: technical/domain correctness and depth
+- relevance: alignment to asked question
+- fluency: flow, coherence, filler control
+- clarity: structure, precision, understandability
 
-Example:
+Tone and calibration rules:
+- Be fair and motivating. Do not over-penalize minor wording issues.
+- Reserve very low scores (<45) for clearly off-topic or empty answers.
+- If the answer is partially correct, reflect that with mid-range scores.
+- Feedback should include one clear strength and 2 concrete improvements.
+- Keep feedback practical and encouraging for learning.
+
+Output schema (strict):
 {
-  "scores": { "confidence": 80, "knowledge": 75, "relevance": 90, "fluency": 85, "clarity": 80 },
-  "feedback": "Good use of examples, but try to be more concise in explaining the technical details."
+  "scores": { "confidence": 0, "knowledge": 0, "relevance": 0, "fluency": 0, "clarity": 0 },
+  "feedback": "70-120 words",
+  "strongerAnswerSuggestion": "max 80 words, concrete improved example"
 }
 `;
 
 export const generateSessionReportPrompt = (sessionTitle, questions) => `
-You are an expert career coach. Analyze the following interview session results and provide a final summary report.
+You are a hiring coach. Return only valid JSON.
+Summarize this session using the compact evidence.
 
-Session: ${sessionTitle}
-Questions & Answers:
-${questions.map((q, i) => `Q${i+1}: ${q.questionText}\nA${i+1}: ${q.userResponseText}\nFeedback: ${q.feedback}`).join('\n\n')}
+session_title: ${sessionTitle}
+evidence:
+${questions.map((q, i) => `Q${i + 1}: ${q.questionText}\nscore_hint: ${Math.round((((q.stats?.confidence || 0) + (q.stats?.knowledgeLevel || 0) + (q.stats?.relevance || 0) + (q.stats?.fluency || 0) + (q.stats?.clarity || 0)) / 5) || 0)}\nfeedback: ${q.feedback || "n/a"}`).join('\n\n')}
 
-Return a JSON object with:
-- overallScore: (0-100)
-- summary: A 2-3 sentence summary of performance.
-- strengths: [list of 3 strings]
-- improvements: [list of 3 strings]
-
-Example:
+Output schema (strict):
 {
-  "overallScore": 78,
-  "summary": "The candidate showed strong domain knowledge but struggled with situational behavior questions.",
-  "strengths": ["Technical accuracy", "Confidence", "Problem-solving"],
-  "improvements": ["Communication clarity", "Time management", "Specific examples"]
+  "overallScore": 0,
+  "summary": "max 80 words",
+  "strengths": ["item1", "item2", "item3"],
+  "improvements": ["item1", "item2", "item3"]
 }
 `;
 

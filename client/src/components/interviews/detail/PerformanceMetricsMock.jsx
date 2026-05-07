@@ -1,4 +1,60 @@
-export default function PerformanceMetricsMock() {
+function getSessionMetricAverages(session) {
+  const questions = session?.questions || [];
+  const totals = { confidence: 0, clarity: 0, knowledgeLevel: 0 };
+  let count = 0;
+
+  questions.forEach((question) => {
+    const stats = question.stats || {};
+    if (
+      typeof stats.confidence === "number" &&
+      typeof stats.clarity === "number" &&
+      typeof stats.knowledgeLevel === "number"
+    ) {
+      totals.confidence += stats.confidence;
+      totals.clarity += stats.clarity;
+      totals.knowledgeLevel += stats.knowledgeLevel;
+      count += 1;
+    }
+  });
+
+  if (count === 0) {
+    return { confidence: 0, clarity: 0, knowledgeLevel: 0, hasData: false };
+  }
+
+  return {
+    confidence: Math.round(totals.confidence / count),
+    clarity: Math.round(totals.clarity / count),
+    knowledgeLevel: Math.round(totals.knowledgeLevel / count),
+    hasData: true,
+  };
+}
+
+function getPointPath(points, chartHeight) {
+  if (points.length === 0) return "";
+  const xStep = points.length > 1 ? 700 / (points.length - 1) : 0;
+
+  return points
+    .map((value, index) => {
+      const x = 50 + index * xStep;
+      const y = 20 + ((100 - value) / 100) * (chartHeight - 40);
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+}
+
+export default function PerformanceMetricsMock({ sessions = [] }) {
+  const completedSessions = (sessions || [])
+    .filter((session) => session.status === "completed")
+    .sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
+  const metricRows = completedSessions.map(getSessionMetricAverages).filter((row) => row.hasData);
+
+  const confidencePoints = metricRows.map((row) => row.confidence);
+  const clarityPoints = metricRows.map((row) => row.clarity);
+  const knowledgePoints = metricRows.map((row) => row.knowledgeLevel);
+
+  const chartHeight = 300;
+  const hasChartData = metricRows.length > 0;
+
   return (
     <div className="mb-12">
       {/* Header & Legend */}
@@ -10,6 +66,9 @@ export default function PerformanceMetricsMock() {
           <h2 className="text-2xl font-bold text-white tracking-tight">
             Progress Over Time
           </h2>
+          <p className="text-xs text-white/40 mt-2">
+            Based on completed sessions with evaluated answers.
+          </p>
         </div>
         
         <div className="flex items-center gap-5 text-xs text-white/70">
@@ -30,13 +89,19 @@ export default function PerformanceMetricsMock() {
 
       {/* Chart Canvas */}
       <div className="bg-[#111111] border border-white/5 rounded-2xl p-6 relative w-full overflow-hidden">
+        {!hasChartData ? (
+          <div className="h-[220px] flex items-center justify-center text-sm text-white/40">
+            No evaluated sessions yet. Complete at least one session to view trends.
+          </div>
+        ) : (
+          <>
         {/* Y-Axis Labels */}
         <div className="absolute left-6 top-8 bottom-8 flex flex-col justify-between text-[10px] text-white/30 z-10 hidden sm:flex">
-          <span>10.0</span>
-          <span>7.5</span>
-          <span>5.0</span>
-          <span>2.5</span>
-          <span>0.0</span>
+          <span>100</span>
+          <span>75</span>
+          <span>50</span>
+          <span>25</span>
+          <span>0</span>
         </div>
 
         {/* SVG Wrapper to preserve aspect and stretch nicely */}
@@ -46,7 +111,7 @@ export default function PerformanceMetricsMock() {
             preserveAspectRatio="none"
             className="w-full h-full overflow-visible"
             role="img"
-            aria-label="Mock performance line chart"
+            aria-label="Performance trend chart"
           >
             {/* Grid Lines */}
             <g stroke="currentColor" className="text-white/5" strokeWidth="1">
@@ -59,7 +124,7 @@ export default function PerformanceMetricsMock() {
 
             {/* Knowledge Line (Gray) */}
             <path
-              d="M 50 250 L 200 230 L 350 210 L 500 180 L 650 170 L 800 160"
+              d={getPointPath(knowledgePoints, chartHeight)}
               fill="none"
               stroke="#52525B"
               strokeWidth="2"
@@ -67,7 +132,7 @@ export default function PerformanceMetricsMock() {
             />
             {/* Clarity Line (White) */}
             <path
-              d="M 50 280 L 200 240 L 350 170 L 500 150 L 650 140 L 800 100"
+              d={getPointPath(clarityPoints, chartHeight)}
               fill="none"
               stroke="#FFFFFF"
               strokeWidth="2"
@@ -75,7 +140,7 @@ export default function PerformanceMetricsMock() {
             />
             {/* Confidence Line (Green) */}
             <path
-              d="M 50 260 L 200 210 L 350 220 L 500 130 L 650 110 L 800 60"
+              d={getPointPath(confidencePoints, chartHeight)}
               fill="none"
               stroke="#A3E635"
               strokeWidth="3"
@@ -83,6 +148,8 @@ export default function PerformanceMetricsMock() {
             />
           </svg>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

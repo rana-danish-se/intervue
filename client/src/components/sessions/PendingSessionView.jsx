@@ -14,21 +14,33 @@ import {
   ArrowRight
 } from '@phosphor-icons/react';
 
-export default function PendingSessionView({ session }) {
+export default function PendingSessionView({
+  session,
+  selectedDifficulty = "medium",
+  selectedPersona = "neutral",
+  onDifficultyChange,
+  onPersonaChange,
+  onStartSession,
+  isStarting = false,
+}) {
   const router = useRouter();
-  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState(null);
 
   const handleStart = async () => {
-    setIsStarting(true);
     setError(null);
     try {
-      const { default: axiosInstance } = await import('@/lib/axiosInstance');
-      await axiosInstance.post(`/sessions/${session.id}/generate-questions`);
-      router.push(`/interview/${session.id}/live`);
+      if (onStartSession) {
+        await onStartSession(selectedDifficulty);
+      } else {
+        const { default: axiosInstance } = await import('@/lib/axiosInstance');
+        await axiosInstance.post(`/sessions/${session.id}/generate-questions`, {
+          difficulty: selectedDifficulty,
+          interviewerPersona: selectedPersona,
+        });
+        router.push(`/interview/${session.id}/live`);
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message);
-      setIsStarting(false);
     }
   };
 
@@ -54,6 +66,34 @@ export default function PendingSessionView({ session }) {
         <div className="absolute top-0 left-0 w-1.5 h-full bg-[#A3E635]"></div>
         <div className="inline-block px-2 py-0.5 rounded bg-[#A3E635]/10 border border-[#A3E635]/20 text-[#A3E635] text-[10px] font-bold tracking-tighter uppercase mb-4">
           Session {session.order || 1}
+        </div>
+        <div className="mb-4">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-2">
+            Question Difficulty
+          </label>
+          <select
+            value={selectedDifficulty}
+            onChange={(event) => onDifficultyChange?.(event.target.value)}
+            className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-2">
+            Interviewer Persona
+          </label>
+          <select
+            value={selectedPersona}
+            onChange={(event) => onPersonaChange?.(event.target.value)}
+            className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+          >
+            <option value="friendly">Friendly</option>
+            <option value="neutral">Neutral</option>
+            <option value="tough">Tough</option>
+          </select>
         </div>
         <h1 className="text-4xl  font-bold text-white mb-6 leading-tight tracking-tight">
           {session.title || 'Session Overview'}

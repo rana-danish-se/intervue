@@ -1,3 +1,10 @@
+/*
+Role: Shared HTTP client for frontend API calls.
+What it does: Configures axios base URL/credentials and handles transparent access-token refresh + safe login redirect on auth expiry.
+Where used: Imported by client service modules as the default API transport.
+Why it exists: Enforces consistent request/response behavior and avoids duplicated auth-retry logic.
+*/
+
 import axios from 'axios';
 
 
@@ -46,9 +53,3 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
-
-/**
- * Role: Global Axios HTTP Client with Token Refresh Interceptor
- * What it has: The response interceptor's error handler attempts a token refresh via `axios.post('/auth/refresh-token')` when a `401` is received on any request except `/auth/login`. If the refresh succeeds, it silently retries the original failed request via `axiosInstance(originalRequest)`. If the refresh also fails, it redirects to `/auth/login?session_expired=true`, but only when the user is outside of any `/auth/` route and not on the home page.
- * Where it is being used: Imported by `auth.service.js` as the sole HTTP client for all API requests.
- */

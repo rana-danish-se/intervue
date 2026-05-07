@@ -30,9 +30,3 @@ export default function Home() {
     </main>
   );
 }
-
-/**
- * Role: Landing Page Assembly Component
- * What it has: This is a pure UI component with no functions. It composes and renders the full landing page by assembling all section components in order: `Navbar`, `Hero`, `ProblemStatement`, `HowItWorks`, `Feature`, `DemoPreview`, `Domains`, `Testimonials`, `Pricing`, `CTA`, and `Footer`.
- * Where it is being used: Imported and rendered by `app/page.js` at the root `/` route.
- */

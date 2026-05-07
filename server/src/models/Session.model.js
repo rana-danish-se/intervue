@@ -17,6 +17,16 @@ const sessionSchema = new mongoose.Schema({
     trim: true,
     default: null,
   },
+  difficulty: {
+    type: String,
+    enum: ['easy', 'medium', 'hard'],
+    default: 'medium',
+  },
+  interviewerPersona: {
+    type: String,
+    enum: ['friendly', 'neutral', 'tough'],
+    default: 'neutral',
+  },
   order: {
     type: Number,
     required: true,

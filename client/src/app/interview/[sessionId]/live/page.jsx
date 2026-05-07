@@ -1,489 +1,280 @@
 "use client";
-import { useEffect, useRef, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { 
-  Microphone, 
-  ArrowRight, 
-  ArrowClockwise, 
-  CircleNotch, 
-  WarningCircle, 
-  User, 
-  Timer,
+
+/*
+Role: Canonical live interview route screen.
+What it does: Fetches session metadata and renders the realtime interview surface driven by `useInterviewRoom` state/actions.
+Where used: Entry route after starting/continuing a session from dashboard pages.
+Why it exists: Provides a production-facing, full-screen interview experience with transcript and answer controls.
+*/
+
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import {
+  Microphone,
+  ArrowRight,
+  ArrowCounterClockwise,
+  CircleNotch,
   CheckCircle,
-  XCircle,
-  CaretRight
-} from '@phosphor-icons/react';
+  Clock,
+  Keyboard,
+  Warning,
+} from "@phosphor-icons/react";
+import { useInterviewRoom } from "@/hooks/useInterviewRoom";
+
+const formatTime = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+};
 
 export default function LiveInterview() {
-  const router = useRouter();
   const { sessionId } = useParams();
-  
-  // State
-  const [sessionData, setSessionData] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [transcription, setTranscription] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [finishing, setFinishing] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [startTime, setStartTime] = useState(null);
-  const [elapsed, setElapsed] = useState(0);
-  const [error, setError] = useState(null);
-  const [mounted, setMounted] = useState(false);
-  const [turn, setTurn] = useState('ai'); // 'ai' or 'user'
-  const [conversation, setConversation] = useState([]); // [{ sender: 'ai' | 'user', text: string }]
-
-  // Refs
-  const recognitionRef = useRef(null);
-  const finalTranscriptRef = useRef('');
-  const synthRef = useRef(null);
-  const timerRef = useRef(null);
   const transcriptEndRef = useRef(null);
+  const [sessionMeta, setSessionMeta] = useState(null);
+  const [isMetaLoading, setIsMetaLoading] = useState(true);
+
+  const {
+    status,
+    questions,
+    currentQuestion,
+    currentIndex,
+    isLastQuestion,
+    isAiSpeaking,
+    isListening,
+    liveTranscript,
+    typedAnswer,
+    setTypedAnswer,
+    inputMode,
+    setInputMode,
+    speechUsable,
+    transcriptHistory,
+    timer,
+    startInterview,
+    nextQuestion,
+    repeatQuestion,
+    abandonSession,
+    endSession,
+  } = useInterviewRoom(sessionId);
 
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== 'undefined') {
-      synthRef.current = window.speechSynthesis;
-    }
-  }, []);
+    let active = true;
 
-  // Scroll transcript to bottom
-  useEffect(() => {
-    transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversation, transcription]);
-
-  // Fetch session and questions
-  useEffect(() => {
-    if (!mounted) return;
-    let isMounted = true;
-    async function fetchSession() {
+    async function fetchSessionMeta() {
       try {
-        const { default: axiosInstance } = await import('@/lib/axiosInstance');
-        const res = await axiosInstance.get(`/sessions/${sessionId}`);
-        if (isMounted) {
-          setSessionData(res.data);
-          setQuestions(res.data.questions || []);
-          setAnswers((res.data.questions || []).map(q => ({ questionId: q.id, answerText: '' })));
-          setLoading(false);
-        }
-      } catch (e) {
-        if (isMounted) {
-          setError(e.response?.data?.message || e.message);
-          setLoading(false);
-        }
+        const { default: axiosInstance } = await import("@/lib/axiosInstance");
+        const response = await axiosInstance.get(`/sessions/${sessionId}`);
+        if (active) setSessionMeta(response.data);
+      } finally {
+        if (active) setIsMetaLoading(false);
       }
     }
-    fetchSession();
-    return () => { isMounted = false; };
-  }, [sessionId, mounted]);
 
-  // Setup Speech Recognition
+    fetchSessionMeta();
+    return () => {
+      active = false;
+    };
+  }, [sessionId]);
+
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setError("Your browser does not support speech recognition. Please use Chrome.");
-      return;
-    }
-    
-    const rec = new SpeechRecognition();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = 'en-US';
-    
-    rec.onresult = (event) => {
-      let interimTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscriptRef.current += event.results[i][0].transcript + ' ';
-        } else {
-          interimTranscript += event.results[i][0].transcript;
-        }
-      }
-      setTranscription(finalTranscriptRef.current + interimTranscript);
-    };
-    
-    rec.onend = () => {
-      // If we are still in 'user' turn and not finishing, restart if it stopped unexpectedly
-      if (turn === 'user' && !finishing && isListening) {
-        try { rec.start(); } catch(e) {}
-      } else {
-        setIsListening(false);
-      }
-    };
-    
-    rec.onerror = (e) => {
-      console.error("Speech recognition error:", e.error);
-      if (e.error !== 'no-speech') {
-        setIsListening(false);
-      }
-    };
+    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [transcriptHistory, liveTranscript]);
 
-    recognitionRef.current = rec;
-  }, [turn, finishing, isListening]);
-
-  // Timer
-  useEffect(() => {
-    if (!startTime || finishing) return;
-    timerRef.current = setInterval(() => {
-      setElapsed(Date.now() - startTime);
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-  }, [startTime, finishing]);
-
-  const currentQuestion = questions[currentIndex];
-  const totalQuestions = questions.length;
-
-  const speakQuestion = (idx) => {
-    if (!questions[idx] || !synthRef.current) return;
-    
-    setTurn('ai');
-    synthRef.current.cancel();
-    
-    const qText = questions[idx].text;
-    const utter = new SpeechSynthesisUtterance(qText);
-    utter.rate = 0.95;
-    
-    // Add to conversation history
-    setConversation(prev => [...prev, { sender: 'ai', text: qText }]);
-    
-    utter.onend = () => {
-      // Transition to user turn immediately after AI finishes
-      setTurn('user');
-      startRecognition();
-    };
-    
-    synthRef.current.speak(utter);
-  };
-
-  const startRecognition = () => {
-    if (recognitionRef.current && !isListening) {
-      try {
-        finalTranscriptRef.current = '';
-        setTranscription('');
-        recognitionRef.current.start();
-        setIsListening(true);
-      } catch (e) {
-        console.error("Could not start recognition:", e);
-      }
-    }
-  };
-
-  const stopRecognition = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
-  };
-
-  const handleStartInterview = () => {
-    if (!questions.length) return;
-    setHasStarted(true);
-    setStartTime(Date.now());
-    speakQuestion(0);
-  };
-
-  const onNext = () => {
-    if (!currentQuestion) return;
-    
-    const finalAnswer = transcription.trim() || 'No answer provided.';
-    
-    // Add user response to conversation
-    setConversation(prev => [...prev, { sender: 'user', text: finalAnswer }]);
-    
-    // Save answer for final submission
-    const updatedAnswers = [...answers];
-    updatedAnswers[currentIndex] = { 
-      questionId: currentQuestion.id, 
-      answerText: finalAnswer
-    };
-    setAnswers(updatedAnswers);
-    
-    stopRecognition();
-    
-    if (currentIndex + 1 < totalQuestions) {
-      setCurrentIndex(currentIndex + 1);
-      setTimeout(() => speakQuestion(currentIndex + 1), 500);
-    } else {
-      onFinish(updatedAnswers);
-    }
-  };
-
-  const onRepeat = () => {
-    if (currentQuestion) {
-      stopRecognition();
-      // Remove last AI entry to avoid duplication in transcript if desired, 
-      // but usually repeats are just spoken. Let's just speak it.
-      speakQuestion(currentIndex);
-    }
-  };
-
-  const onFinish = async (finalAnswersPayload = null) => {
-    if (finishing) return;
-    setFinishing(true);
-    stopRecognition();
-    if (synthRef.current) synthRef.current.cancel();
-    
-    const payload = finalAnswersPayload || answers;
-    
-    try {
-      const { default: axiosInstance } = await import('@/lib/axiosInstance');
-      await axiosInstance.post(`/sessions/${sessionId}/evaluate`, { answers: payload });
-      router.push(`/dashboard/sessions/${sessionId}`);
-    } catch (e) {
-      console.error(e);
-      setError("Failed to submit session. " + (e.response?.data?.message || e.message));
-      setFinishing(false);
-    }
-  };
-
-  const onExit = async () => {
-    stopRecognition();
-    if (synthRef.current) synthRef.current.cancel();
-    
-    try {
-      const { default: axiosInstance } = await import('@/lib/axiosInstance');
-      await axiosInstance.patch(`/sessions/${sessionId}/abandon`);
-    } catch (e) {
-      console.error("Failed to abandon session", e);
-    }
-    router.push(`/dashboard/sessions/${sessionId}`);
-  };
-
-  const formatTime = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-    const secs = (totalSeconds % 60).toString().padStart(2, '0');
-    return `${mins}:${secs}`;
-  };
-
-  if (!mounted) return null;
-
-  if (loading) {
+  if (isMetaLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black">
-        <CircleNotch weight="bold" className="w-10 h-10 text-[#A3E635] animate-spin mb-4" />
-        <p className="text-white/40 font-medium tracking-widest uppercase text-xs">Initializing Secure Environment</p>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <CircleNotch className="w-8 h-8 text-[#A3E635] animate-spin" />
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-black px-6">
-        <div className="max-w-md w-full bg-[#1C1C1E] border border-red-500/20 rounded-3xl p-10 text-center">
-          <WarningCircle weight="fill" className="w-16 h-16 text-red-500 mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-white mb-4">System Error</h2>
-          <p className="text-white/50 mb-8 leading-relaxed">{error}</p>
-          <button onClick={() => router.back()} className="w-full bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl font-bold transition-all border border-white/10">
-            Return to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!hasStarted) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <div className="max-w-2xl w-full bg-[#1C1C1E] border border-white/10 rounded-[2.5rem] p-12 text-center shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#A3E635] to-transparent opacity-50"></div>
-          
-          <div className="w-24 h-24 bg-[#A3E635]/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-[#A3E635]/20 rotate-3">
-            <Microphone weight="fill" className="w-12 h-12 text-[#A3E635] -rotate-3" />
-          </div>
-          
-          <h1 className="text-4xl font-bold text-white mb-6 tracking-tight">Ready for your interview?</h1>
-          <p className="text-white/50 text-lg mb-12 max-w-md mx-auto leading-relaxed">
-            The AI is initialized and ready to evaluate your responses. Ensure you're in a quiet space with your microphone enabled.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button 
-              onClick={handleStartInterview}
-              className="w-full sm:w-auto bg-[#A3E635] text-black px-12 py-5 rounded-2xl font-bold text-lg hover:bg-[#86CB16] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#A3E635]/10"
-            >
-              Enter Session
-            </button>
-            <button 
-              onClick={onExit}
-              className="w-full sm:w-auto bg-white/5 border border-white/10 text-white/40 px-12 py-5 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isIdle = status === "idle";
+  const isLoading = status === "loading";
+  const isTranscribing = status === "transcribing";
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans">
-      {/* Top Header Bar */}
-      <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between bg-black/50 backdrop-blur-xl z-20">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/10">
-            <Timer size={20} className="text-[#A3E635]" weight="bold" />
-            <span className="font-mono text-lg font-medium tabular-nums">{formatTime(elapsed)}</span>
-          </div>
-          <div className="h-8 w-px bg-white/10"></div>
-          <div>
-            <h2 className="text-sm font-bold text-white/40 uppercase tracking-widest">{sessionData?.title || 'Live Interview'}</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[#A3E635] text-xs font-bold uppercase tracking-tighter">Live Session</span>
-              <div className="w-1 h-1 rounded-full bg-[#A3E635] animate-pulse"></div>
-            </div>
+    <div className="fixed inset-0 bg-[#0A0A0A] text-white flex flex-col font-sans overflow-hidden">
+      <header className="flex-shrink-0 h-16 flex items-center justify-between px-8 bg-[#0F0F0F] border-b border-white/5 z-20">
+        <div className="flex items-center gap-4">
+          <span className="text-[#A3E635] font-black italic tracking-tighter text-xl border-r border-white/10 pr-4">
+            INTERVUE
+          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-white leading-tight">
+              {sessionMeta?.title || "Live Interview Session"}
+            </span>
+            <span className="text-[10px] text-white/50 font-medium tracking-wider uppercase">
+              {sessionMeta?.focus || "General"}
+            </span>
           </div>
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex gap-1.5">
-              {questions.map((_, i) => (
-                <div 
-                  key={i} 
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    i < currentIndex ? 'w-4 bg-[#A3E635]' : 
-                    i === currentIndex ? 'w-8 bg-[#A3E635] ring-4 ring-[#A3E635]/20' : 
-                    'w-1.5 bg-white/10'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Question {currentIndex + 1} of {totalQuestions}</span>
+          <div className="flex items-center gap-2 text-white/90 font-mono text-lg font-bold bg-[#111] px-4 py-1.5 rounded-lg border border-white/10">
+            <Clock weight="bold" className="w-5 h-5 text-[#A3E635]" />
+            {formatTime(timer)}
           </div>
-          <button 
-            onClick={onExit}
-            className="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-red-500/20 transition-all flex items-center gap-2"
+          <button
+            onClick={isLastQuestion ? endSession : abandonSession}
+            className="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold transition-all"
           >
-            <XCircle size={18} weight="bold" />
-            End Interview
+            {isLastQuestion ? "Finish Session" : "Exit Session"}
           </button>
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden relative">
-        {/* Left Side: Main Experience */}
-        <div className="flex-1 flex flex-col items-center justify-center p-12 relative z-10">
-          {/* Avatar Area */}
-          <div className="relative mb-12">
-            {/* Glow Effect */}
-            <div className={`absolute -inset-8 rounded-full blur-3xl transition-all duration-1000 opacity-20 ${turn === 'ai' ? 'bg-[#A3E635]' : 'bg-blue-500'}`}></div>
-            
-            <div className={`relative w-64 h-64 rounded-[3rem] p-1 border transition-all duration-700 overflow-hidden ${turn === 'ai' ? 'border-[#A3E635]/30' : 'border-white/10'}`}>
-              <div className="w-full h-full rounded-[2.8rem] bg-[#1C1C1E] flex items-center justify-center overflow-hidden">
-                {turn === 'ai' ? (
-                  <img src="/avatar.png" alt="AI Avatar" className="w-full h-full object-cover scale-110" />
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <User size={80} weight="duotone" className="text-white/20 mb-2" />
-                    <span className="text-white/20 text-[10px] font-bold uppercase tracking-widest">You are speaking</span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Turn Indicator Dot */}
-              <div className={`absolute bottom-6 right-6 w-4 h-4 rounded-full border-4 border-[#1C1C1E] z-20 ${turn === 'ai' ? 'bg-[#A3E635]' : 'bg-blue-500'}`}></div>
-            </div>
+      <div className="flex-1 grid grid-cols-[360px_1fr] min-h-0 overflow-hidden">
+        <aside className="flex flex-col bg-[#0D0D0D] border-r border-white/5 overflow-hidden">
+          <div className="flex-shrink-0 px-6 py-4 border-b border-white/5 bg-[#0F0F0F]">
+            <h2 className="text-[11px] font-black tracking-[0.2em] text-white/40 uppercase flex items-center gap-2">
+              <Microphone className="w-4 h-4" /> Live Transcript
+            </h2>
           </div>
 
-          {/* Current Question Text */}
-          <div className="max-w-2xl text-center">
-            <h3 className={`text-2xl sm:text-3xl font-medium leading-tight transition-all duration-700 ${turn === 'ai' ? 'text-white' : 'text-white/40'}`}>
-              {currentQuestion?.text}
-            </h3>
-            {turn === 'user' && transcription && (
-              <div className="mt-8 p-6 bg-white/5 border border-white/10 rounded-2xl max-h-32 overflow-y-auto w-full">
-                <p className="text-[#A3E635] text-lg font-medium italic">"{transcription}"</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Side: Transcript Sidebar */}
-        <aside className="w-[400px] border-l border-white/5 bg-[#0A0A0A] flex flex-col z-10">
-          <div className="p-6 border-b border-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#A3E635]"></div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">Transcript</h3>
-            </div>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
-            {conversation.map((entry, i) => (
-              <div key={i} className="flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${entry.sender === 'ai' ? 'text-[#A3E635]' : 'text-white/40'}`}>
-                    {entry.sender === 'ai' ? 'The AI' : 'You'}
-                  </span>
-                  <div className="flex-1 h-px bg-white/5"></div>
-                </div>
-                <p className={`text-sm leading-relaxed ${entry.sender === 'ai' ? 'text-white/80' : 'text-white/60'}`}>
-                  {entry.text}
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            {transcriptHistory.map((item, i) => (
+              <div key={i} className="space-y-1.5">
+                <span className={`text-[10px] font-black uppercase tracking-wider ${item.role === "ai" ? "text-[#A3E635]" : "text-blue-400"}`}>
+                  {item.role === "ai" ? "Intervue AI" : "You"}
+                </span>
+                <p className="text-sm leading-relaxed p-3 rounded-xl border text-white/70 bg-white/[0.02] border-white/10">
+                  {item.text}
                 </p>
               </div>
             ))}
-            
-            {/* Current Real-time Transcript */}
-            {turn === 'user' && transcription && (
-              <div className="flex flex-col gap-3 opacity-60">
-                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#A3E635]">Recording...</span>
-                  <div className="flex-1 h-px bg-[#A3E635]/20"></div>
-                </div>
-                <p className="text-sm leading-relaxed text-[#A3E635] italic">
-                  {transcription}
-                </p>
-              </div>
+            {isListening && liveTranscript && (
+              <p className="text-sm text-blue-300 italic bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
+                {liveTranscript}
+              </p>
             )}
             <div ref={transcriptEndRef} />
           </div>
         </aside>
-      </main>
 
-      {/* Bottom Control Bar */}
-      <footer className="h-32 border-t border-white/5 bg-black/80 backdrop-blur-2xl flex items-center justify-center z-20">
-        <div className="flex items-center gap-8">
-          {/* Repeat Button */}
-          <div className="flex flex-col items-center gap-2">
-            <button 
-              onClick={onRepeat}
-              className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all group"
-            >
-              <ArrowClockwise size={24} className="group-active:rotate-180 transition-transform duration-500" />
-            </button>
-            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Repeat</span>
-          </div>
-
-          {/* Microphone Button */}
-          <div className="relative">
-            {isListening && (
-              <div className="absolute -inset-4 bg-red-500/20 rounded-full animate-ping"></div>
+        <main className="relative flex flex-col overflow-hidden bg-black">
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-12 py-8 overflow-hidden">
+            {isIdle && (
+              <div className="flex flex-col items-center text-center space-y-8">
+                <h1 className="text-4xl font-black tracking-tight italic">READY TO START?</h1>
+                <button
+                  onClick={startInterview}
+                  className="px-10 py-5 bg-[#A3E635] text-black font-black italic tracking-tighter text-xl rounded-2xl hover:scale-105 transition-all"
+                >
+                  START INTERVIEW
+                </button>
+              </div>
             )}
-            <button 
-              className={`w-24 h-24 rounded-3xl flex items-center justify-center transition-all duration-500 relative z-10 ${
-                isListening ? 'bg-red-500 text-white shadow-2xl shadow-red-500/40' : 'bg-[#1C1C1E] text-white/20 border border-white/10'
-              }`}
-            >
-              <Microphone size={40} weight={isListening ? "fill" : "bold"} />
-            </button>
-          </div>
 
-          {/* Next Button */}
-          <div className="flex flex-col items-center gap-2">
-            <button 
-              onClick={onNext}
-              disabled={turn === 'ai'}
-              className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#A3E635] hover:bg-[#A3E635] hover:text-black transition-all disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed group"
-            >
-              <CaretRight size={28} weight="bold" className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
-            <span className="text-[10px] font-bold text-[#A3E635]/40 uppercase tracking-widest">Next</span>
+            {isLoading && (
+              <div className="flex flex-col items-center gap-6">
+                <CircleNotch className="w-16 h-16 text-[#A3E635] animate-spin" />
+                <p className="text-[#A3E635] text-sm font-bold uppercase tracking-widest animate-pulse">
+                  Initializing Session...
+                </p>
+              </div>
+            )}
+
+            {isTranscribing && (
+              <div className="flex flex-col items-center gap-6">
+                <CircleNotch className="w-16 h-16 text-[#A3E635] animate-spin" />
+                <p className="text-[#A3E635] text-sm font-bold uppercase tracking-widest animate-pulse">
+                  Transcribing...
+                </p>
+              </div>
+            )}
+
+            {!isIdle && !isLoading && !isTranscribing && (
+              <div className="w-full max-w-2xl flex flex-col items-center gap-8">
+                <div className="w-full space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-black italic tracking-tight text-white/80">
+                      Question {currentIndex + 1} <span className="text-white/30 font-normal text-sm">of {questions.length}</span>
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="w-full min-h-[100px] flex items-center justify-center bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+                  <p className="text-xl font-bold leading-relaxed text-white/90 italic text-center">
+                    &quot;{currentQuestion?.questionText}&quot;
+                  </p>
+                </div>
+
+                {!speechUsable && (
+                  <div className="w-full flex items-start gap-3 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-left">
+                    <Warning className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" weight="fill" />
+                    <p className="text-xs text-amber-100/90 leading-relaxed">
+                      Voice recognition needs HTTPS or localhost. Use typed answers below, or deploy behind HTTPS.
+                    </p>
+                  </div>
+                )}
+
+                <div className="w-full flex flex-col gap-3 max-w-2xl">
+                  <div className="flex rounded-xl border border-white/10 p-1 bg-black/40">
+                    <button
+                      type="button"
+                      onClick={() => setInputMode("voice")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors ${
+                        inputMode === "voice"
+                          ? "bg-[#A3E635] text-black"
+                          : "text-white/50 hover:text-white/80"
+                      }`}
+                    >
+                      <Microphone className="w-4 h-4" weight="bold" />
+                      Voice
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInputMode("type")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors ${
+                        inputMode === "type"
+                          ? "bg-[#A3E635] text-black"
+                          : "text-white/50 hover:text-white/80"
+                      }`}
+                    >
+                      <Keyboard className="w-4 h-4" weight="bold" />
+                      Type
+                    </button>
+                  </div>
+                  <textarea
+                    value={typedAnswer}
+                    onChange={(e) => setTypedAnswer(e.target.value)}
+                    placeholder={
+                      inputMode === "type"
+                        ? "Type your answer…"
+                        : "Optional: add detail or fix transcript…"
+                    }
+                    rows={inputMode === "type" ? 5 : 3}
+                    className="w-full resize-y rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[#A3E635]/40 min-h-[88px]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-10">
+                  <button
+                    onClick={repeatQuestion}
+                    disabled={isAiSpeaking || isTranscribing}
+                    className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-[#111] disabled:opacity-20"
+                  >
+                    <ArrowCounterClockwise size={20} weight="bold" />
+                  </button>
+
+                  <div className={`w-20 h-20 rounded-[1.5rem] flex items-center justify-center ${
+                    isListening ? "bg-[#A3E635] text-black" : "bg-[#111] text-white/40 border border-white/10"
+                  }`}>
+                    <Microphone weight="fill" className={`w-8 h-8 ${isListening ? "animate-pulse" : ""}`} />
+                  </div>
+
+                  <button
+                    onClick={isLastQuestion ? endSession : nextQuestion}
+                    disabled={isAiSpeaking || isTranscribing}
+                    className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-[#111] disabled:opacity-20"
+                  >
+                    {isLastQuestion ? <CheckCircle size={20} weight="bold" /> : <ArrowRight size={20} weight="bold" />}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }

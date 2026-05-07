@@ -1,3 +1,10 @@
+/*
+Role: Socket.IO runtime entrypoint.
+What it does: Initializes socket server, authenticates sockets via JWT cookie, and delegates interview events to domain handlers.
+Where used: Called once from server bootstrap during realtime initialization.
+Why it exists: Separates socket infrastructure concerns from interview event business logic.
+*/
+
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
@@ -49,11 +56,3 @@ export const initSocket = (server) => {
 
   return io;
 };
-
-/*
-FILE: src/sockets/socketManager.js
-ROLE: Entry point for Socket.io logic. Handles connection initialization, 
-      JWT authentication via cookies, and delegates event handling to domain-specific handlers.
-IMPORTED BY:
-  - server.js
-*/

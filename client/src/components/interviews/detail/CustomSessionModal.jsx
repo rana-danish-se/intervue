@@ -8,6 +8,7 @@ import { useToastStore } from "@/store/toastStore";
 export default function CustomSessionModal({ isOpen, onClose, interviewId, onSuccess }) {
   const [title, setTitle] = useState("");
   const [focus, setFocus] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const showToast = useToastStore((state) => state.showToast);
 
@@ -19,11 +20,12 @@ export default function CustomSessionModal({ isOpen, onClose, interviewId, onSuc
 
     setIsSubmitting(true);
     try {
-      await sessionService.createCustomSession({ interviewId, title, focus });
+      await sessionService.createCustomSession({ interviewId, title, focus, difficulty });
       showToast("Custom session created successfully", "success");
       onSuccess();
       setTitle("");
       setFocus("");
+      setDifficulty("medium");
       onClose();
     } catch (err) {
       console.error(err);
@@ -74,6 +76,19 @@ export default function CustomSessionModal({ isOpen, onClose, interviewId, onSuc
               className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#A3E635] focus:ring-1 focus:ring-[#A3E635] transition-all"
             />
             <p className="text-xs text-white/40">The AI will use this focus area to generate exactly 5 relevant questions.</p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-white/70">Difficulty</label>
+            <select
+              value={difficulty}
+              onChange={(event) => setDifficulty(event.target.value)}
+              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#A3E635] focus:ring-1 focus:ring-[#A3E635] transition-all"
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
           </div>
 
           <div className="pt-2 flex justify-end gap-3">

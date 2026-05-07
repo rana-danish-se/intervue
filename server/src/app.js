@@ -1,3 +1,10 @@
+/*
+Role: Express app composition root.
+What it does: Registers global security/logging/parsing middleware, mounts auth/interview/session routers, and wires not-found + global error handlers.
+Where used: Imported by the server bootstrap file that starts HTTP + socket infrastructure.
+Why it exists: Keeps transport/runtime wiring centralized and predictable across environments.
+*/
+
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -58,24 +65,3 @@ app.use(notFound);
 app.use(globalErrorHandler);
 
 export default app;
-
-/*
-FILE: src/app.js
-ROLE: Central Express application factory. Registers all global middleware, mounts route groups, and attaches error-handling middleware. The configured `app` instance is exported and consumed by server.js to start the HTTP server.
-
-FUNCTIONS / LOGIC:
-  - helmet() middleware — sets secure HTTP response headers to protect against common web vulnerabilities.
-  - morgan() middleware — logs HTTP requests; uses 'dev' format in development and 'combined' in production.
-  - apiLimiter (rateLimit) — restricts each IP to 100 requests per 15-minute window on all /api/* routes to prevent abuse.
-  - express.json() / express.urlencoded() — parses incoming JSON and URL-encoded request bodies and attaches them to req.body.
-  - cookieParser() — parses the Cookie header and populates req.cookies for use by auth middleware and controllers.
-  - cors() — enables cross-origin requests from the CLIENT_URL (default http://localhost:3000) with credentials (cookies) allowed.
-  - passport.initialize() — initialises Passport.js authentication without session support (JWT + cookie strategy used instead).
-  - GET '/' handler — health-check endpoint; responds with a JSON confirmation that the API is running.
-  - app.use('/api/auth', authRoutes) — mounts all authentication routes (register, login, Google OAuth, etc.) under /api/auth.
-  - notFound middleware — catches any unmatched route and forwards a 404 AppError to the global error handler.
-  - globalErrorHandler middleware — final error-handling pipe; formats and sends the error response to the client.
-
-IMPORTED BY:
-  - server.js — imports the default export `app` and calls app.listen() to start the HTTP server.
-*/

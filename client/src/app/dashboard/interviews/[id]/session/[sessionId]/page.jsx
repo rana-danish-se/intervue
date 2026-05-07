@@ -1,22 +1,48 @@
 "use client";
 
-import { use, useEffect } from "react";
+// Removed server-side `use` hook usage in client; params are provided via props
 import Link from "next/link";
+import { sessionService } from '@/services/session.service';
+import { useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Brain, CircleNotch, WarningCircle, MicrophoneStage, ShieldCheck, CheckCircle } from "@phosphor-icons/react";
 import { useInterviewDetail } from "@/hooks/useInterviewDetail";
 import AbandonedSessionView from "@/components/interviews/session/AbandonedSessionView";
 import CompletedSessionReport from "@/components/interviews/session/CompletedSessionReport";
 
-export default function PreSessionLobby({ params }) {
-  const unwrappedParams = use(params);
-  const { id: interviewId, sessionId } = unwrappedParams;
+import { useParams } from 'next/navigation';
+export default function PreSessionLobby() {
+  const params = useParams();
+  const interviewId = params?.id;
+  const sessionId = params?.sessionId;
   
   const router = useRouter();
   
   const { interview, isLoading: isFetching, error, refetch } = useInterviewDetail(interviewId);
 
+  const [report, setReport] = useState(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState(null);
   const session = interview?.sessions?.find(s => s._id === sessionId);
+
+  // Fetch report when session is completed
+  useEffect(() => {
+    if (!session || session.status !== 'completed') return;
+    const fetchReport = async () => {
+      setReportError(null);
+      setReportLoading(true);
+      try {
+        const data = await sessionService.getSessionReport(sessionId);
+        setReport(data.report);
+      } catch (err) {
+        const msg = err?.response?.data?.message || 'Failed to load session report.';
+        setReportError(msg);
+      } finally {
+        setReportLoading(false);
+      }
+    };
+    fetchReport();
+  }, [sessionId, session?.status]);
 
   // Poll for updates if the session is currently processing
   useEffect(() => {
@@ -85,7 +111,7 @@ export default function PreSessionLobby({ params }) {
               <span className="text-sm font-medium text-white/80">Focus: {session.focus || "General"}</span>
             </div>
           </div>
-          <CompletedSessionReport session={session} />
+          <CompletedSessionReport session={session} report={report} />
         </div>
       );
     }
