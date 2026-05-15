@@ -15,7 +15,6 @@ export const createInterview = asyncHandler(async (req, res, next) => {
   const { role, experienceLevel, jobDescription, goal, sessionCount } = req.body;
   const userId = req.user._id;
 
-  // Validation
   if (!role || typeof role !== 'string') {
     return next(new AppError('Role is required and must be a string', 400));
   }
@@ -86,7 +85,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
   });
 });
 
-// Bug #5 fix — new GET /:id handler
 export const getInterview = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const userId = req.user._id;

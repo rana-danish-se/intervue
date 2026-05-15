@@ -39,6 +39,31 @@ export default function CompletedSessionView({ session }) {
         )
       : 0;
 
+  const getScoreBand = (score) => {
+    if (score >= 85) return { label: "Excellent", color: "#A3E635" };
+    if (score >= 70) return { label: "Good", color: "#22C55E" };
+    if (score >= 50) return { label: "Developing", color: "#FBBF24" };
+    return { label: "Needs Work", color: "#EF4444" };
+  };
+
+  const scoreBand = getScoreBand(overallScore);
+
+  const strongestMetric = averageByMetric
+    ? Object.entries(averageByMetric).sort((a, b) => b[1] - a[1])[0]
+    : null;
+
+  const weakestMetric = averageByMetric
+    ? Object.entries(averageByMetric).sort((a, b) => a[1] - b[1])[0]
+    : null;
+
+  const improvementTips = {
+    confidence: "Practice maintaining steady tone and avoid filler words.",
+    knowledge: "Review fundamental concepts and common interview topics.",
+    relevance: "Structure answers using STAR method to stay on topic.",
+    fluency: "Speak at a comfortable pace and practice continuous speaking.",
+    clarity: "Focus on concise, well-organized responses.",
+  };
+
   const metrics = averageByMetric
     ? `Overall score ${overallScore}/100 across ${questions.length} questions.`
     : 'Interview completed, but evaluation metrics are not available yet.';
@@ -128,9 +153,16 @@ export default function CompletedSessionView({ session }) {
                         <CaretDown className="h-7 w-7 group-open:rotate-180 transition-transform duration-200" weight="bold" />
                       </span>
                       <div className="min-w-0 flex-1 pt-0.5">
-                        <span className="text-white/40 text-xs font-bold uppercase tracking-widest block mb-2">
-                          Question {idx + 1}
-                        </span>
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-white/40 text-xs font-bold uppercase tracking-widest">
+                            Question {idx + 1}
+                          </span>
+                          {(!it.answerText || it.answerText === "[Skipped]") && it.stats && Object.values(it.stats).every(v => v === 0) && (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                              Skipped
+                            </span>
+                          )}
+                        </div>
                         <p className="text-white text-base md:text-lg font-medium leading-snug">{it.text || "Question"}</p>
                         <span className="inline-block mt-2 text-[11px] font-semibold text-[#A3E635]/80 uppercase tracking-wider">
                           Tap to expand answer & feedback
@@ -188,15 +220,48 @@ export default function CompletedSessionView({ session }) {
         <div className="lg:col-span-1">
           <div className="bg-[#1C1C1E] border border-white/10 rounded-2xl p-6 sticky top-6" aria-label="AI Remarks">
             <h3 className="text-lg font-bold text-white mb-4">AI Remarks</h3>
-            <div className="bg-white/5 rounded-xl p-5 border border-white/5">
-              <p className="text-white/80 leading-relaxed text-sm">
-                {averageByMetric
-                  ? `Strongest area: ${Object.entries(averageByMetric).sort((a, b) => b[1] - a[1])[0][0]}. Focus next on ${
-                      Object.entries(averageByMetric).sort((a, b) => a[1] - b[1])[0][0]
-                    } to improve overall consistency.`
-                  : 'No AI remarks available.'}
-              </p>
-            </div>
+            
+            {averageByMetric ? (
+              <div className="space-y-4">
+                <div className="bg-white/5 rounded-xl p-5 border border-white/5">
+                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider mb-2">Score Band</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-bold" style={{ color: scoreBand.color }}>
+                      {overallScore}
+                    </span>
+                    <span className="text-sm font-semibold" style={{ color: scoreBand.color }}>
+                      {scoreBand.label}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-white/30 mt-2">
+                    Excellent ≥85 / Good 70–84 / Developing 50–69 / Needs Work &lt;50
+                  </p>
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-5 border border-white/5">
+                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider mb-2">Strongest</p>
+                  <p className="text-white/80 text-sm capitalize">
+                    {strongestMetric[0]} ({strongestMetric[1]}%)
+                  </p>
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-5 border border-white/5">
+                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider mb-2">Needs Improvement</p>
+                  <p className="text-white/80 text-sm capitalize mb-2">
+                    {weakestMetric[0]} ({weakestMetric[1]}%)
+                  </p>
+                  <p className="text-white/50 text-xs italic">
+                    {improvementTips[weakestMetric[0]] || "Keep practicing to improve."}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white/5 rounded-xl p-5 border border-white/5">
+                <p className="text-white/80 leading-relaxed text-sm">
+                  No AI remarks available.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -31,8 +31,8 @@ const callLLM = async (prompt) => {
       temperature: 0.2,
     });
     jsonResponseString = completion.choices[0]?.message?.content || "{}";
-  } else if (process.env.GEMINI_API_KEY) {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  } else if (process.env.WAQAR_GEMINI_KEY) {
+    const genAI = new GoogleGenerativeAI(process.env.WAQAR_GEMINI_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     
     const result = await model.generateContent({
@@ -70,7 +70,12 @@ export const generateSessionBlueprints = async (interviewDetails) => {
 
   try {
     const result = await callLLM(prompt);
-    return Array.isArray(result) ? result : [result];
+    // Unwrap common LLM wrapper patterns (e.g. { questions: [...] } or { items: [...] })
+    // before flattening, so we always work with a plain array of question objects.
+    const arr = Array.isArray(result)
+      ? result
+      : (result?.questions || result?.items || result?.data || [result]);
+    return arr;
   } catch (error) {
     console.error('LLM Blueprint Generation Error:', error);
     throw new Error('Failed to generate interview blueprints: ' + error.message);
@@ -89,8 +94,19 @@ export const generateSessionQuestions = async (
 
   try {
     const result = await callLLM(prompt);
-    const arr = Array.isArray(result) ? result : [result];
-    
+
+    // Unwrap every known LLM wrapper pattern before flattening
+    let arr;
+    if (Array.isArray(result)) {
+      arr = result;
+    } else if (result && typeof result === 'object') {
+      // Find the first key whose value is an array
+      const arrayKey = Object.keys(result).find(k => Array.isArray(result[k]));
+      arr = arrayKey ? result[arrayKey] : [result];
+    } else {
+      arr = [result];
+    }
+
     // Robust mapping to handle LLM returning different keys like "question" instead of "questionText"
     return arr.map(q => {
       if (typeof q === 'string') return { questionText: q };

@@ -85,8 +85,10 @@ export default function DashboardHome() {
           </div>
         </div>
         <div className="p-6 rounded-2xl bg-[#111111] border border-white/5">
-          <p className="text-[11px] text-white/40 font-semibold tracking-wider uppercase mb-4">Total Sessions</p>
-          <h2 className="text-5xl font-bold text-[#A3E635]">{stats.totalSessions || 0}</h2>
+          <p className="text-[11px] text-white/40 font-semibold tracking-wider uppercase mb-4">Hiring Probability</p>
+          <h2 className="text-5xl font-bold capitalize" style={{ color: stats.hiringProbability === 'high' ? '#A3E635' : stats.hiringProbability === 'medium' ? '#FBBF24' : '#6B7280' }}>
+            {stats.hiringProbability || "low"}
+          </h2>
         </div>
       </div>
 

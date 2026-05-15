@@ -42,7 +42,12 @@ export default function InterviewCard({ interview, onDelete }) {
     averageScore = null,
     lastPracticedAt,
     nextSessionId,
+    progressStatus,
   } = interview;
+
+  const isCompleted = progressStatus === "completed" || (totalSessions > 0 && !nextSessionId);
+  const buttonLabel = isCompleted ? "View Results" : nextSessionId ? "Continue" : "Begin";
+  const buttonHref = isCompleted ? `/dashboard/interviews/${_id}` : nextSessionId ? `/dashboard/sessions/${nextSessionId}` : `/dashboard/interviews/${_id}`;
   const levelLabel = LEVEL_LABELS[experienceLevel] ?? experienceLevel.toUpperCase();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -149,11 +154,11 @@ export default function InterviewCard({ interview, onDelete }) {
       {/* Actions */}
       <div className="flex items-center gap-3">
         <Link
-          href={nextSessionId ? `/dashboard/sessions/${nextSessionId}` : `/dashboard/interviews/${_id}`}
+          href={buttonHref}
           className="flex-1 py-3 bg-[#A3E635] text-black font-semibold rounded-xl hover:bg-[#94d82d] transition-colors flex items-center justify-center gap-2 text-sm"
         >
           <Play weight="fill" className="w-4 h-4" />
-          Start Session
+          {buttonLabel}
         </Link>
         <Link
           href={`/dashboard/interviews/${_id}`}

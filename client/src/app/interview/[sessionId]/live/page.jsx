@@ -32,6 +32,7 @@ export default function LiveInterview() {
   const transcriptEndRef = useRef(null);
   const [sessionMeta, setSessionMeta] = useState(null);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
+  const [showSkipWarning, setShowSkipWarning] = useState(false);
 
   const {
     status,
@@ -54,6 +55,7 @@ export default function LiveInterview() {
     repeatQuestion,
     abandonSession,
     endSession,
+    allAnswersEmpty,
   } = useInterviewRoom(sessionId);
 
   useEffect(() => {
@@ -115,7 +117,11 @@ export default function LiveInterview() {
           </div>
           <button
             onClick={isLastQuestion ? endSession : abandonSession}
-            className="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold transition-all"
+            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+              isLastQuestion
+                ? "bg-[#A3E635] text-black hover:bg-[#94d82d]"
+                : "bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400"
+            }`}
           >
             {isLastQuestion ? "Finish Session" : "Exit Session"}
           </button>
@@ -131,6 +137,11 @@ export default function LiveInterview() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            {transcriptHistory.length === 0 && !liveTranscript && (
+              <p className="text-white/20 text-sm italic text-center py-8">
+                Transcript will appear here as you speak…
+              </p>
+            )}
             {transcriptHistory.map((item, i) => (
               <div key={i} className="space-y-1.5">
                 <span className={`text-[10px] font-black uppercase tracking-wider ${item.role === "ai" ? "text-[#A3E635]" : "text-blue-400"}`}>
@@ -185,6 +196,12 @@ export default function LiveInterview() {
             {!isIdle && !isLoading && !isTranscribing && (
               <div className="w-full max-w-2xl flex flex-col items-center gap-8">
                 <div className="w-full space-y-2">
+                  <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                    <div
+                      className="h-1 bg-[#A3E635] transition-all"
+                      style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+                    />
+                  </div>
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-black italic tracking-tight text-white/80">
                       Question {currentIndex + 1} <span className="text-white/30 font-normal text-sm">of {questions.length}</span>
@@ -263,9 +280,20 @@ export default function LiveInterview() {
                   </div>
 
                   <button
-                    onClick={isLastQuestion ? endSession : nextQuestion}
+                    onClick={() => {
+                      if (isLastQuestion) {
+                        if (allAnswersEmpty) {
+                          setShowSkipWarning(true);
+                        } else {
+                          endSession();
+                        }
+                      } else {
+                        nextQuestion();
+                      }
+                    }}
                     disabled={isAiSpeaking || isTranscribing}
                     className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-[#111] disabled:opacity-20"
+                    title={isLastQuestion ? "Finish Session" : "Next Question"}
                   >
                     {isLastQuestion ? <CheckCircle size={20} weight="bold" /> : <ArrowRight size={20} weight="bold" />}
                   </button>
@@ -275,6 +303,39 @@ export default function LiveInterview() {
           </div>
         </main>
       </div>
+
+      {showSkipWarning && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#111111] border border-white/10 rounded-2xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl">
+            <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto">
+              <Warning size={32} className="text-amber-400" weight="fill" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-white">No Answers Recorded</h2>
+              <p className="text-sm text-white/50 leading-relaxed">
+                You haven&apos;t provided any answers for this session. It will be marked as completed with all questions scored 0.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowSkipWarning(false)}
+                className="flex-1 py-3 border border-white/5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-colors"
+              >
+                Go Back
+              </button>
+              <button 
+                onClick={() => {
+                  setShowSkipWarning(false);
+                  endSession();
+                }}
+                className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl text-xs uppercase tracking-widest transition-colors shadow-lg shadow-amber-500/20"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

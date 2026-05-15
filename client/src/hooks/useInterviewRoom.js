@@ -437,10 +437,15 @@ export function useInterviewRoom(sessionId) {
       window.speechSynthesis?.cancel();
 
       const fullAnswer = await finalizeCurrentAnswer();
+      
+      const isSkipped = !fullAnswer || !fullAnswer.trim();
 
-    if (fullAnswer) {
-      addToHistory("user", fullAnswer);
-    }
+      if (isSkipped) {
+        showToast("No answer recorded — marked as skipped.", "warning");
+        addToHistory("user", "[Skipped]");
+      } else {
+        addToHistory("user", fullAnswer);
+      }
 
     setAnswers((prev) => {
       const updated = [...prev];
@@ -508,9 +513,13 @@ export function useInterviewRoom(sessionId) {
 
       const fullAnswer = await finalizeCurrentAnswer();
 
-    if (fullAnswer) {
-      addToHistory("user", fullAnswer);
-    }
+      const isSkipped = !fullAnswer || !fullAnswer.trim();
+      
+      if (isSkipped) {
+        addToHistory("user", "[Skipped]");
+      } else {
+        addToHistory("user", fullAnswer);
+      }
 
       const base = [...answersRef.current];
       base[idx] = fullAnswer;
@@ -584,5 +593,6 @@ export function useInterviewRoom(sessionId) {
     repeatQuestion,
     abandonSession,
     endSession,
+    allAnswersEmpty: questions.length > 0 && answers.every(a => !a?.trim()),
   };
 }

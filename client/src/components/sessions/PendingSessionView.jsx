@@ -67,41 +67,43 @@ export default function PendingSessionView({
         <div className="inline-block px-2 py-0.5 rounded bg-[#A3E635]/10 border border-[#A3E635]/20 text-[#A3E635] text-[10px] font-bold tracking-tighter uppercase mb-4">
           Session {session.order || 1}
         </div>
-        <div className="mb-4">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-2">
-            Question Difficulty
-          </label>
-          <select
-            value={selectedDifficulty}
-            onChange={(event) => onDifficultyChange?.(event.target.value)}
-            className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-2">
-            Interviewer Persona
-          </label>
-          <select
-            value={selectedPersona}
-            onChange={(event) => onPersonaChange?.(event.target.value)}
-            className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-          >
-            <option value="friendly">Friendly</option>
-            <option value="neutral">Neutral</option>
-            <option value="tough">Tough</option>
-          </select>
-        </div>
-        <h1 className="text-4xl  font-bold text-white mb-6 leading-tight tracking-tight">
+        <h1 className="text-4xl  font-bold text-white mb-4 leading-tight tracking-tight">
           {session.title || 'Session Overview'}
         </h1>
-        <p className="text-white/50 text-lg leading-relaxed max-w-3xl">
+        <p className="text-white/50 text-lg leading-relaxed max-w-3xl mb-6">
           Focusing on {session.focus?.toLowerCase() || 'core competencies'}, this session evaluates technical depth, 
           problem-solving strategies, and practical application scenarios.
         </p>
+        <div className="flex flex-wrap gap-6">
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-2">
+              Question Difficulty
+            </label>
+            <select
+              value={selectedDifficulty}
+              onChange={(event) => onDifficultyChange?.(event.target.value)}
+              className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-2">
+              Interviewer Persona
+            </label>
+            <select
+              value={selectedPersona}
+              onChange={(event) => onPersonaChange?.(event.target.value)}
+              className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+            >
+              <option value="friendly">Friendly</option>
+              <option value="neutral">Neutral</option>
+              <option value="tough">Tough</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* How This Session Works */}
@@ -219,6 +221,12 @@ export default function PendingSessionView({
               </>
             )}
           </button>
+          
+          {isStarting && (
+            <p className="text-white/30 text-xs text-center mt-3">
+              Generating your session questions — this may take up to 30 seconds…
+            </p>
+          )}
           
           <div className="flex items-center justify-center gap-2 mt-6 text-white/20 text-xs">
             <Sparkle size={12} weight="fill" />

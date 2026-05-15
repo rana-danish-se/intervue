@@ -33,8 +33,10 @@ export const generateQuestions = asyncHandler(async (req, res, next) => {
 
   const { session, interview } = await getAuthorizedSessionAndInterview(id, userId);
 
-  // If questions already exist, return them directly so the room can start
-  if (session.questions && session.questions.length > 0) {
+  // Only return cached questions if a full set (5+) is already stored.
+  // If a previous bad generation saved fewer than 5, fall through and regenerate.
+  if (session.questions && session.questions.length >= 5) {
+    console.log(`[Session ${id}] Returning ${session.questions.length} cached questions.`);
     if (difficulty && allowedDifficulties.includes(difficulty)) {
       session.difficulty = difficulty;
     }
@@ -49,6 +51,12 @@ export const generateQuestions = asyncHandler(async (req, res, next) => {
       difficulty: session.difficulty,
       questions: session.questions.map(q => ({ _id: q._id, questionText: q.questionText }))
     });
+  }
+
+  // Clear any previously stored incomplete question set before regenerating
+  if (session.questions && session.questions.length > 0) {
+    console.log(`[Session ${id}] Found only ${session.questions.length} cached questions — regenerating.`);
+    session.questions = [];
   }
 
   const selectedDifficulty =
@@ -205,7 +213,19 @@ export const completeSession = asyncHandler(async (req, res, next) => {
     try {
       // For each question, get feedback
       for (const question of session.questions) {
-        if (!question.userResponseText) continue;
+        if (!question.userResponseText?.trim()) {
+          // Question was skipped — fill with zero stats and a clear note
+          question.stats = {
+            confidence: 0,
+            knowledgeLevel: 0,
+            relevance: 0,
+            fluency: 0,
+            clarity: 0,
+          };
+          question.feedback = "This question was skipped. No answer was provided.";
+          question.strongerAnswerSuggestion = null;
+          continue;
+        }
 
         const evaluation = await llmService.evaluateAnswer({
           role: interview.role,
