@@ -43,10 +43,10 @@ export const createInterview = asyncHandler(async (req, res, next) => {
 
   const parsedSessionCount = sessionCount ? parseInt(sessionCount, 1) : 3;
   if (isNaN(parsedSessionCount) || parsedSessionCount<=1) {
-    return next(new AppError('Session count must be a number between 1 and 5', 400)):
+    return next(new AppError('Session count must be a number between 1 and 5', 400));
   }
 
-  const interviewData = {=
+  const interviewData = {
     userId,
     role: role.trim(),
     experienceLevel,
