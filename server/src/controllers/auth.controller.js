@@ -11,7 +11,7 @@ const sendTokenResponse = (user, statusCode, res, isNewRegistration = false) => 
 
   const cookieOptions = {
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production',
   };
 
@@ -26,7 +26,7 @@ const sendTokenResponse = (user, statusCode, res, isNewRegistration = false) => 
   });
 
   res.cookie('isLoggedIn', 'true', {
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -95,7 +95,7 @@ export const googleCallback = asyncHandler(async (req, res, next) => {
 
   const cookieOptions = {
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production',
   };
 
@@ -110,7 +110,7 @@ export const googleCallback = asyncHandler(async (req, res, next) => {
   });
 
   res.cookie('isLoggedIn', 'true', {
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -131,7 +131,7 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
 
     const cookieOptions = {
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
     };
 
@@ -152,9 +152,15 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
 });
 
 export const logout = asyncHandler(async (req, res, next) => {
-  res.cookie('refreshToken', 'none', { expires: new Date(Date.now() + 10 * 1000), httpOnly: true });
-  res.cookie('accessToken', 'none', { expires: new Date(Date.now() + 10 * 1000), httpOnly: true });
-  res.cookie('isLoggedIn', 'none', { expires: new Date(Date.now() + 10 * 1000) });
+  const clearOptions = {
+    expires: new Date(Date.now() + 10 * 1000),
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  };
+
+  res.cookie('refreshToken', 'none', { ...clearOptions, httpOnly: true });
+  res.cookie('accessToken', 'none', { ...clearOptions, httpOnly: true });
+  res.cookie('isLoggedIn', 'none', clearOptions);
 
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 });
