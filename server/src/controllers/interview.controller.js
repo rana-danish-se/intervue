@@ -41,8 +41,8 @@ export const createInterview = asyncHandler(async (req, res, next) => {
     return next(new AppError('Goal cannot exceed 200 characters', 400));
   }
 
-  const parsedSessionCount = sessionCount ? parseInt(sessionCount, 1) : 3;
-  if (isNaN(parsedSessionCount) || parsedSessionCount<=1) {
+  const parsedSessionCount = sessionCount ? parseInt(sessionCount, 10) : 3;
+  if (isNaN(parsedSessionCount) || parsedSessionCount < 1 || parsedSessionCount > 5) {
     return next(new AppError('Session count must be a number between 1 and 5', 400));
   }
 
